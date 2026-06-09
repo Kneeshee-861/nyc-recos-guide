@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Your NYC Margdarshak</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F7F3EE;
+  --purple: #7B4FD4;
+  --purple-light: #F0E6FF;
+  --purple-mid: #C4A0F0;
+  --text: #151515;
+  --muted: #888;
+  --border: #E5DDD4;
+  --white: #FFFFFF;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); font-family: Inter, sans-serif; color: var(--text); max-width: 430px; margin: 0 auto; min-height: 100vh; overflow-x: hidden; }
+
+/* ── SCREENS ── */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ── HOME ── */
+.home-wrap { padding: 44px 24px 0; position: relative; }
+
+.top-label { font-size: 11px; letter-spacing: 0.12em; color: #999; text-transform: uppercase; line-height: 1.8; }
+.top-label span { color: var(--purple); }
+
+/* floating doodles */
+.doodle-moon { position: absolute; top: 36px; right: 24px; font-size: 2.4rem; }
+.doodle-star { position: absolute; color: var(--purple-mid); font-size: 1.1rem; }
+.doodle-star.s1 { top: 52px; right: 72px; }
+.doodle-star.s2 { top: 90px; right: 42px; font-size: 0.8rem; }
+.doodle-star.s3 { top: 44px; right: 110px; font-size: 0.7rem; }
+
+/* hero */
+.hero { text-align: center; padding-top: 28px; }
+.hero h1 { font-family: 'Instrument Serif', serif; font-size: 42px; font-weight: 400; line-height: 1.05; letter-spacing: -0.5px; }
+.hero h1 .purple-italic { display: block; color: var(--purple); font-style: italic; font-size: 46px; }
+.hero .tagline { font-family: 'Caveat', cursive; font-size: 22px; color: var(--text); margin-top: 14px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.hero .tagline::before { content: '→'; color: var(--purple); font-family: serif; }
+.hero .flags { margin-top: 10px; font-size: 22px; letter-spacing: 4px; }
+
+/* search */
+.search-wrap { margin-top: 32px; }
+.section-label { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+.search-box { background: var(--white); border-radius: 20px; border: 1px solid var(--border); padding: 6px 6px 6px 18px; display: flex; align-items: center; gap: 10px; box-shadow: 0 2px 16px rgba(0,0,0,0.04); }
+.search-box input { flex: 1; border: none; outline: none; font-size: 14px; color: var(--text); background: transparent; font-family: Inter, sans-serif; padding: 8px 0; }
+.search-box input::placeholder { color: #bbb; }
+.search-btn { width: 42px; height: 42px; border-radius: 50%; border: none; background: var(--purple-light); color: var(--purple); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.15s; }
+.search-btn:hover { background: #e0ccff; }
+.qa-response { margin-top: 12px; font-size: 14px; color: #555; line-height: 1.65; background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 14px 18px; display: none; }
+
+/* divider */
+.divider { display: flex; align-items: center; gap: 14px; margin: 28px 0 22px; color: var(--muted); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; }
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.divider span::before, .divider span::after { content: ' ✦ '; color: var(--purple-mid); }
+
+/* cards */
+.cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 0; }
+.card { background: var(--white); border-radius: 22px; border: 1px solid var(--border); padding: 20px 16px; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; position: relative; overflow: hidden; }
+.card:active { transform: scale(0.97); }
+.card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.07); }
+.card.purple { background: var(--purple-light); border-color: var(--purple-mid); }
+.card-icon { width: 48px; height: 48px; background: var(--bg); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 14px; }
+.card.purple .card-icon { background: rgba(123,79,212,0.1); }
+.card h3 { font-family: 'Instrument Serif', serif; font-size: 19px; font-weight: 400; line-height: 1.2; margin-bottom: 6px; }
+.card p { font-size: 12px; color: var(--muted); line-height: 1.5; font-style: italic; }
+.card.purple p { color: var(--purple); }
+.card-arrow { position: absolute; top: 18px; right: 16px; color: #ccc; font-size: 18px; }
+.card.purple .card-arrow { color: var(--purple-mid); }
+
+/* illustration */
+.illustration-wrap { margin-top: 32px; width: calc(100% + 48px); margin-left: -24px; overflow: hidden; }
+
+/* ── RESULTS SCREEN ── */
+.results-wrap { padding: 48px 24px 48px; }
+.results-header { display: flex; align-items: center; gap: 14px; margin-bottom: 28px; }
+.back-btn { background: var(--white); border: 1px solid var(--border); color: var(--text); border-radius: 50%; width: 38px; height: 38px; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-family: inherit; }
+.results-header h2 { font-family: 'Instrument Serif', serif; font-size: 24px; font-weight: 400; }
+.results-header h2 em { font-style: italic; color: var(--purple); }
+
+/* loading */
+.loading { display: none; text-align: center; padding: 60px 0; }
+.loading-dot { display: inline-block; width: 7px; height: 7px; background: var(--purple-mid); border-radius: 50%; margin: 0 3px; animation: pulse 1.2s infinite; }
+.loading-dot:nth-child(2) { animation-delay: 0.2s; }
+.loading-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes pulse { 0%,80%,100% { opacity: 0.2; transform: scale(0.7); } 40% { opacity: 1; transform: scale(1.15); } }
+.loading p { color: var(--muted); font-size: 13px; margin-top: 14px; }
+
+/* place cards */
+.places-list { margin-bottom: 24px; }
+.place-card { background: var(--white); border: 1px solid var(--border); border-radius: 20px; padding: 18px 20px; margin-bottom: 10px; }
+.place-card .place-name { font-family: 'Instrument Serif', serif; font-size: 20px; font-weight: 400; margin-bottom: 6px; }
+.place-card .place-desc { font-size: 13px; color: #666; line-height: 1.65; margin-bottom: 14px; }
+.maps-link { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: var(--purple); text-decoration: none; background: var(--purple-light); border: 1px solid var(--purple-mid); padding: 7px 14px; border-radius: 20px; transition: background 0.15s; }
+.maps-link:hover { background: #e4d0ff; }
+
+/* subway */
+.subway-label { font-size: 10px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; }
+.subway-card { background: var(--white); border: 1px solid var(--border); border-radius: 20px; padding: 18px 20px; display: flex; align-items: center; gap: 14px; }
+.subway-badge { width: 40px; height: 40px; border-radius: 50%; background: #ee352e; color: white; font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.subway-name { font-size: 14px; font-weight: 500; margin-bottom: 3px; }
+.subway-detail { font-size: 12px; color: var(--muted); }
+
+/* error */
+.error-msg { display: none; background: #fff5f5; border: 1px solid #fdd; border-radius: 16px; padding: 16px 18px; font-size: 14px; color: #c04040; line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<!-- ── HOME SCREEN ── -->
+<div id="home-screen" class="screen active">
+<div class="home-wrap">
+
+  <div class="top-label">Made by Nishi <span>♥</span><br>with love</div>
+
+  <!-- floating doodles -->
+  <div class="doodle-moon">🌙</div>
+  <div class="doodle-star s1">✦</div>
+  <div class="doodle-star s2">✦</div>
+  <div class="doodle-star s3">✦</div>
+
+  <div class="hero">
+    <h1>Hey Good Looking,<span class="purple-italic">How's New York Cooking?</span></h1>
+    <div class="tagline">Your NYC Margdarshak ♡</div>
+    <div class="flags">🇮🇳 ♥ 🗽</div>
+  </div>
+
+  <div class="search-wrap">
+    <div class="section-label">Ask anything about NYC</div>
+    <div class="search-box">
+      <input id="qa-input" type="text" placeholder="Best bagel in the city? Which train goes to Brooklyn?" />
+      <button class="search-btn" onclick="askNYC()">↑</button>
+    </div>
+    <div class="qa-response" id="qa-response"></div>
+  </div>
+
+  <div class="divider"><span>or explore</span></div>
+
+  <div class="cards">
+    <div class="card" onclick="getNearby('general')">
+      <div class="card-icon">📍</div>
+      <h3>General Nearby</h3>
+      <p>What's around me right now?</p>
+      <div class="card-arrow">›</div>
+    </div>
+    <div class="card purple" onclick="getNearby('nishi')">
+      <div class="card-icon">✦</div>
+      <h3>Nishi's Picks</h3>
+      <p>Taste mein best —<br>Nishi aur Everest</p>
+      <div class="card-arrow">›</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- NYC Illustration -->
+<div class="illustration-wrap">
+<svg viewBox="0 0 430 420" xmlns="http://www.w3.org/2000/svg" width="100%" style="display:block;">
+
+  <!-- Background -->
+  <rect width="430" height="420" fill="#F7F3EE"/>
+
+  <!-- Floating hearts & stars -->
+  <text x="30" y="55" font-size="16" fill="#C4A0F0">♥</text>
+  <text x="380" y="70" font-size="12" fill="#C4A0F0">✦</text>
+  <text x="200" y="45" font-size="10" fill="#C4A0F0">✦</text>
+  <text x="340" y="100" font-size="8" fill="#C4A0F0">✦</text>
+  <text x="60" y="90" font-size="8" fill="#C4A0F0">✦</text>
+  <text x="410" y="140" font-size="14" fill="#C4A0F0">♥</text>
+
+  <!-- ── BUILDINGS (pink/lilac tones to match mockup) ── -->
+
+  <!-- Far left short -->
+  <rect x="0" y="185" width="42" height="175" fill="#DDD0EE" rx="2"/>
+  <rect x="6" y="196" width="7" height="9" fill="#F7F3EE" rx="1" opacity="0.8"/>
+  <rect x="18" y="196" width="7" height="9" fill="#F7F3EE" rx="1" opacity="0.6"/>
+  <rect x="30" y="196" width="7" height="9" fill="#F7F3EE" rx="1" opacity="0.8"/>
+  <rect x="6" y="212" width="7" height="9" fill="#F7F3EE" rx="1" opacity="0.5"/>
+  <rect x="30" y="212" width="7" height="9" fill="#F7F3EE" rx="1" opacity="0.7"/>
+
+  <!-- Left medium -->
+  <rect x="46" y="148" width="52" height="212" fill="#CBB8E8" rx="2"/>
+  <rect x="52" y="158" width="8" height="11" fill="#F7F3EE" rx="1" opacity="0.7"/>
+  <rect x="66" y="158" width="8" height="11" fill="#F7F3EE" rx="1" opacity="0.5"/>
+  <rect x="80" y="158" width="8" height="11" fill="#F7F3EE" rx="1" opacity="0.8"/>
+  <rect x="52" y="176" width="8" height="11" fill="#F7F3EE" rx="1" opacity="0.6"/>
+  <rect x="80" y="176" width="8" height="11" fill="#F7F3EE" rx="1" opacity="0.4"/>
+  <rect x="52" y="194" width="8" height="11" fill="#F7F3EE" rx="1" opacity="0.7"/>
+  <rect x="66" y="194" width="8" height="11" fill="#F7F3EE" rx="1" opacity="0.5"/>
+  <!-- Left spire -->
+  <rect x="66" y="134" width="8" height="18" fill="#BBA8DC" rx="1"/>
+  <rect x="69" y="122" width="2" height="14" fill="#A090C8"/>
+
+  <!-- EMPIRE STATE CENTER -->
+  <rect x="178" y="90" width="56" height="270" fill="#D4C0EC" rx="2"/>
+  <rect x="188" y="74" width="36" height="50" fill="#CBB4E4" rx="1"/>
+  <rect x="198" y="60" width="16" height="32" fill="#C2ACDC" rx="1"/>
+  <rect x="203" y="46" width="6" height="20" fill="#BAA4D4" rx="1"/>
+  <rect x="205" y="36" width="2" height="14" fill="#9070C0"/>
+  <!-- ES windows -->
+  <rect x="184" y="100" width="6" height="8" fill="#F7F3EE" rx="1" opacity="0.7"/>
+  <rect x="195" y="100" width="6" height="8" fill="#F7F3EE" rx="1" opacity="0.5"/>
+  <rect x="218" y="100" width="6" height="8" fill="#F7F3EE" rx="1" opacity="0.7"/>
+  <rect x="184" y="116" width="6" height="8" fill="#F7F3EE" rx="1" opacity="0.5"/>
+  <rect x="218" y="116" width="6" height="8" fill="#F7F3EE" rx="1" opacity="0.6"/>
+  <rect x="195" y="116" width="6" height="8" fill="#F7F3EE" rx="1" opacity="0.4"/>
+  <rect x="184" y="132" width="6" height="8" fill="#F7F3EE" rx="1" opacity="0.6"/>
+  <rect x="218" y="132" width="6" height="8" fill="#F7F3EE" rx="1" opacity="0.5"/>
+
+  <!-- Right tall building -->
+  <rect x="290" y="128" width="60" height="232" fill="#C8B4E0" rx="2"/>
+  <rect x="300" y="115" width="40" height="42" fill="#C0ACDC" rx="1"/>
+  <!-- Chrysler style top -->
+  <polygon points="315,115 320,90 325,115" fill="#B8A0D4"/>
+  <rect x="298" y="138" width="8" height="10" fill="#F7F3EE" rx="1" opacity="0.6"/>
+  <rect x="312" y="138" width="8" height="10" fill="#F7F3EE" rx="1" opacity="0.4"/>
+  <rect x="326" y="138" width="8" height="10" fill="#F7F3EE" rx="1" opacity="0.7"/>
+  <rect x="298" y="154" width="8" height="10" fill="#F7F3EE" rx="1" opacity="0.5"/>
+  <rect x="326" y="154" width="8" height="10" fill="#F7F3EE" rx="1" opacity="0.6"/>
+  <rect x="312" y="154" width="8" height="10" fill="#F7F3EE" rx="1" opacity="0.4"/>
+  <rect x="298" y="170" width="8" height="10" fill="#F7F3EE" rx="1" opacity="0.7"/>
+  <rect x="326" y="170" width="8" height="10" fill="#F7F3EE" rx="1" opacity="0.5"/>
+
+  <!-- Far right building -->
+  <rect x="358" y="168" width="72" height="192" fill="#D8C8F0" rx="2"/>
+  <rect x="366" y="178" width="8" height="10" fill="#F7F3EE" rx="1" opacity="0.6"/>
+  <rect x="380" y="178" width="8" height="10" fill="#F7F3EE" rx="1" opacity="0.4"/>
+  <rect x="394" y="178" width="8" height="10" fill="#F7F3EE" rx="1" opacity="0.7"/>
+  <rect x="414" y="178" width="8" height="10" fill="#F7F3EE" rx="1" opacity="0.5"/>
+  <rect x="366" y="195" width="8" height="10" fill="#F7F3EE" rx="1" opacity="0.5"/>
+  <rect x="394" y="195" width="8" height="10" fill="#F7F3EE" rx="1" opacity="0.6"/>
+
+  <!-- STATUE OF LIBERTY (right side) -->
+  <rect x="392" y="168" width="10" height="42" fill="#9ABEA8" rx="1"/>
+  <ellipse cx="397" cy="165" rx="9" ry="10" fill="#9ABEA8"/>
+  <rect x="400" y="155" width="2" height="14" fill="#8CAE98"/>
+  <!-- Crown spikes -->
+  <line x1="397" y1="156" x2="395" y2="148" stroke="#8CAE98" stroke-width="1.5"/>
+  <line x1="397" y1="156" x2="399" y2="148" stroke="#8CAE98" stroke-width="1.5"/>
+  <line x1="397" y1="156" x2="402" y2="151" stroke="#8CAE98" stroke-width="1.5"/>
+  <!-- Torch arm -->
+  <line x1="405" y1="162" x2="416" y2="152" stroke="#9ABEA8" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="416" cy="150" r="3" fill="#F0A030"/>
+  <!-- Text bubble -->
+  <rect x="356" y="128" width="52" height="22" fill="white" rx="8" stroke="#E5DDD4" stroke-width="0.8"/>
+  <text x="382" y="143" font-family="Inter,sans-serif" font-size="9" fill="#7B4FD4" text-anchor="middle" font-weight="600">I ♥ NY</text>
+
+  <!-- ── PRETZEL CART (left side) ── -->
+  <!-- Umbrella -->
+  <ellipse cx="68" cy="290" rx="38" ry="12" fill="#9B6FD4"/>
+  <ellipse cx="68" cy="282" rx="38" ry="12" fill="#B08AE8"/>
+  <rect x="66" y="282" width="4" height="55" fill="#888" rx="1"/>
+  <!-- Cart body -->
+  <rect x="35" y="328" width="66" height="28" fill="#F0E8FF" rx="4" stroke="#C4A0F0" stroke-width="1"/>
+  <rect x="35" y="328" width="66" height="10" fill="#C4A0F0" rx="4"/>
+  <!-- Wheels -->
+  <circle cx="48" cy="360" r="8" fill="#555" stroke="#333" stroke-width="1.5"/>
+  <circle cx="88" cy="360" r="8" fill="#555" stroke="#333" stroke-width="1.5"/>
+  <circle cx="48" cy="360" r="3" fill="#888"/>
+  <circle cx="88" cy="360" r="3" fill="#888"/>
+  <!-- Cart text -->
+  <text x="68" y="347" font-family="Inter,sans-serif" font-size="7" fill="#7B4FD4" text-anchor="middle" font-weight="700">HOT PRETZELS</text>
+  <!-- Pretzel on top -->
+  <text x="55" y="328" font-size="14">🥨</text>
+
+  <!-- Coffee cup left -->
+  <rect x="24" y="255" width="22" height="26" fill="#E8D5C0" rx="3" stroke="#C8B090" stroke-width="1"/>
+  <rect x="24" y="255" width="22" height="8" fill="#C8B090" rx="3"/>
+  <text x="35" y="271" font-family="Inter" font-size="8" fill="#7B4FD4" text-anchor="middle" font-weight="700">I♥NY</text>
+  <!-- Handle -->
+  <path d="M 46 260 Q 52 263 46 268" stroke="#C8B090" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+  <!-- Pizza slice (right, near taxi) -->
+  <text x="360" y="385" font-size="28">🍕</text>
+
+  <!-- ── NYC TAXI ── -->
+  <!-- Taxi body -->
+  <rect x="330" y="358" width="72" height="32" fill="#F5C518" rx="5" stroke="#E0B010" stroke-width="1.5"/>
+  <!-- Taxi roof -->
+  <rect x="342" y="342" width="48" height="18" fill="#F5C518" rx="4" stroke="#E0B010" stroke-width="1.5"/>
+  <!-- Taxi sign -->
+  <rect x="356" y="336" width="20" height="8" fill="#1a1a18" rx="2"/>
+  <text x="366" y="343" font-family="Inter" font-size="5" fill="white" text-anchor="middle" font-weight="700">NYC TAXI</text>
+  <!-- Windows -->
+  <rect x="347" y="346" width="16" height="10" fill="#B8D8F0" rx="2"/>
+  <rect x="368" y="346" width="16" height="10" fill="#B8D8F0" rx="2"/>
+  <!-- Wheels -->
+  <circle cx="348" cy="392" r="10" fill="#333" stroke="#222" stroke-width="1.5"/>
+  <circle cx="384" cy="392" r="10" fill="#333" stroke="#222" stroke-width="1.5"/>
+  <circle cx="348" cy="392" r="4" fill="#666"/>
+  <circle cx="384" cy="392" r="4" fill="#666"/>
+  <!-- Taxi face (cute) -->
+  <circle cx="395" cy="355" r="3" fill="#333"/>
+
+  <!-- BROADWAY sign -->
+  <rect x="116" y="262" width="58" height="18" fill="#1a5c1a" rx="2"/>
+  <text x="145" y="275" font-family="Inter" font-size="8" fill="white" text-anchor="middle" font-weight="700">BROADWAY</text>
+  <rect x="124" y="280" width="42" height="14" fill="#2a8c2a" rx="2"/>
+  <text x="145" y="291" font-family="Inter" font-size="7" fill="white" text-anchor="middle">W 45TH ST</text>
+  <!-- Sign post -->
+  <rect x="143" y="280" width="3" height="30" fill="#888"/>
+
+  <!-- ── COUPLE SITTING ── -->
+  <!-- Ground/steps -->
+  <rect x="100" y="360" width="200" height="16" fill="#E8E0D8" rx="3"/>
+  <rect x="108" y="374" width="185" height="10" fill="#DDD5CC" rx="2"/>
+
+  <!-- BOY (left, glasses, purple sweater) -->
+  <!-- Body -->
+  <ellipse cx="162" cy="342" rx="26" ry="22" fill="#8B6CC8"/>
+  <rect x="136" y="340" width="52" height="22" fill="#8B6CC8" rx="4"/>
+  <!-- Legs -->
+  <rect x="140" y="356" width="20" height="14" fill="#F0EDE8" rx="3"/>
+  <rect x="163" y="356" width="20" height="14" fill="#F0EDE8" rx="3"/>
+  <!-- Shoes -->
+  <ellipse cx="150" cy="371" rx="12" ry="5" fill="#222"/>
+  <ellipse cx="173" cy="371" rx="12" ry="5" fill="#222"/>
+  <!-- Arm holding coffee -->
+  <rect x="130" y="332" width="12" height="22" fill="#8B6CC8" rx="4"/>
+  <!-- Coffee cup in hand -->
+  <rect x="122" y="325" width="14" height="17" fill="#E8D5C0" rx="2" stroke="#C8B090" stroke-width="1"/>
+  <rect x="122" y="325" width="14" height="5" fill="#C8B090" rx="2"/>
+  <text x="129" y="337" font-family="Inter" font-size="5" fill="#7B4FD4" text-anchor="middle" font-weight="700">♥</text>
+  <!-- Neck -->
+  <rect x="157" y="312" width="10" height="10" fill="#F5C5A0" rx="2"/>
+  <!-- Head -->
+  <circle cx="162" cy="302" r="18" fill="#F5C5A0"/>
+  <!-- Hair (dark, short) -->
+  <ellipse cx="162" cy="289" rx="17" ry="10" fill="#1a1a18"/>
+  <ellipse cx="150" cy="294" rx="6" ry="9" fill="#1a1a18"/>
+  <ellipse cx="174" cy="294" rx="5" ry="8" fill="#1a1a18"/>
+  <!-- Glasses -->
+  <rect x="152" y="300" width="9" height="7" fill="none" stroke="#e85a20" stroke-width="2" rx="2"/>
+  <rect x="164" y="300" width="9" height="7" fill="none" stroke="#e85a20" stroke-width="2" rx="2"/>
+  <line x1="161" y1="303.5" x2="164" y2="303.5" stroke="#e85a20" stroke-width="1.5"/>
+  <line x1="150" y1="303.5" x2="152" y2="303.5" stroke="#e85a20" stroke-width="1.5"/>
+  <line x1="173" y1="303.5" x2="176" y2="303.5" stroke="#e85a20" stroke-width="1.5"/>
+  <!-- Eyes -->
+  <circle cx="156" cy="304" r="1.5" fill="#1a1a18"/>
+  <circle cx="168" cy="304" r="1.5" fill="#1a1a18"/>
+  <!-- Smile -->
+  <path d="M 158 310 Q 162 314 166 310" stroke="#1a1a18" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+
+  <!-- GIRL (right, dark hair, purple sweater) -->
+  <!-- Body -->
+  <ellipse cx="248" cy="342" rx="26" ry="22" fill="#9B7CD8"/>
+  <rect x="222" y="340" width="52" height="22" fill="#9B7CD8" rx="4"/>
+  <!-- Legs -->
+  <rect x="226" y="356" width="20" height="14" fill="#F0EDE8" rx="3"/>
+  <rect x="249" y="356" width="20" height="14" fill="#F0EDE8" rx="3"/>
+  <!-- Shoes -->
+  <ellipse cx="236" cy="371" rx="12" ry="5" fill="#222"/>
+  <ellipse cx="259" cy="371" rx="12" ry="5" fill="#222"/>
+  <!-- Arm (resting on knee, hand on cheek) -->
+  <rect x="260" y="330" width="12" height="20" fill="#9B7CD8" rx="4"/>
+  <!-- Coffee cup -->
+  <rect x="256" y="318" width="14" height="17" fill="#E8D5C0" rx="2" stroke="#C8B090" stroke-width="1"/>
+  <rect x="256" y="318" width="14" height="5" fill="#C8B090" rx="2"/>
+  <text x="263" y="330" font-family="Inter" font-size="5" fill="#7B4FD4" text-anchor="middle" font-weight="700">♥</text>
+  <!-- Bag -->
+  <rect x="270" y="348" width="34" height="28" fill="#F0E8FF" rx="4" stroke="#C4A0F0" stroke-width="1"/>
+  <path d="M 278 348 Q 281 338 287 338 Q 293 338 296 348" stroke="#C4A0F0" stroke-width="1.5" fill="none"/>
+  <text x="287" y="357" font-family="Inter" font-size="5" fill="#7B4FD4" text-anchor="middle" font-weight="600">NYC IS</text>
+  <text x="287" y="364" font-family="Inter" font-size="5" fill="#7B4FD4" text-anchor="middle" font-weight="600">ALWAYS</text>
+  <text x="287" y="371" font-family="Inter" font-size="5" fill="#7B4FD4" text-anchor="middle" font-weight="600">A GOOD</text>
+  <text x="287" y="378" font-family="Inter" font-size="5" fill="#7B4FD4" text-anchor="middle" font-weight="700">IDEA ♥</text>
+  <!-- Neck -->
+  <rect x="243" y="312" width="10" height="10" fill="#F5C5A0" rx="2"/>
+  <!-- Head -->
+  <circle cx="248" cy="302" r="18" fill="#F5C5A0"/>
+  <!-- Hair (dark, long) -->
+  <ellipse cx="248" cy="289" rx="17" ry="11" fill="#1a1a18"/>
+  <ellipse cx="235" cy="296" rx="7" ry="12" fill="#1a1a18"/>
+  <ellipse cx="261" cy="296" rx="6" ry="10" fill="#1a1a18"/>
+  <ellipse cx="262" cy="310" rx="5" ry="8" fill="#1a1a18"/>
+  <!-- Eyes (no glasses) -->
+  <circle cx="242" cy="303" r="2" fill="#1a1a18"/>
+  <circle cx="254" cy="303" r="2" fill="#1a1a18"/>
+  <circle cx="243" cy="302" r="0.7" fill="white"/>
+  <circle cx="255" cy="302" r="0.7" fill="white"/>
+  <!-- Hand on cheek -->
+  <circle cx="238" cy="310" r="5" fill="#F5C5A0"/>
+  <!-- Smile (dreamy) -->
+  <path d="M 244 309 Q 248 313 252 309" stroke="#1a1a18" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+
+  <!-- "I ♥ NY" speech bubble from girl -->
+  <rect x="260" y="278" width="46" height="22" fill="white" rx="10" stroke="#E5DDD4" stroke-width="0.8"/>
+  <polygon points="264,300 272,300 266,310" fill="white"/>
+  <text x="283" y="293" font-family="Inter,sans-serif" font-size="9" fill="#7B4FD4" text-anchor="middle" font-weight="700">I ♥ NY</text>
+
+  <!-- Bottom strip -->
+  <rect x="0" y="400" width="430" height="20" fill="#EDE6DC"/>
+
+</svg>
+</div>
+
+</div><!-- end home-wrap -->
+</div>
+
+<!-- ── RESULTS SCREEN ── -->
+<div id="results-screen" class="screen">
+<div class="results-wrap">
+
+  <div class="results-header">
+    <button class="back-btn" onclick="showHome()">‹</button>
+    <h2 id="results-title">Nearby</h2>
+  </div>
+
+  <div class="loading" id="loading">
+    <div><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></div>
+    <p id="loading-text">Finding your location...</p>
+  </div>
+
+  <div class="error-msg" id="error-msg"></div>
+  <div class="places-list" id="places-list"></div>
+
+  <div id="subway-section" style="display:none;">
+    <div class="subway-label">Nearest subway</div>
+    <div class="subway-card">
+      <div class="subway-badge" id="subway-badge">1</div>
+      <div>
+        <div class="subway-name" id="subway-name">—</div>
+        <div class="subway-detail" id="subway-detail">—</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+
+// ── NISHI'S PICKS ──
+const NISHI_PICKS = [
+  // BROOKLYN
+  { name: "Oxomoco", neighbourhood: "Greenpoint, Brooklyn", lat: 40.7231, lng: -73.9442, description: "Mexican restaurant in Greenpoint — seriously good food, worth the trip to Brooklyn." },
+  { name: "Bao & Pancakes", neighbourhood: "Brooklyn", lat: 40.6928, lng: -73.9862, description: "Exactly what it sounds like and better than you'd expect. Go." },
+  { name: "L'Industrie Pizzeria", neighbourhood: "Williamsburg", lat: 40.7123, lng: -73.9581, description: "Really really good pizza in Williamsburg — don't skip this one." },
+  { name: "Emmy Squared", neighbourhood: "Williamsburg", lat: 40.7165, lng: -73.9571, description: "The Emmy Squared burger and garlic pesto bread are life-changing. So so good." },
+  { name: "Brooklyn Bridge Park", neighbourhood: "Brooklyn Heights", lat: 40.7024, lng: -73.9969, description: "Walk over the bridge and end up here — the views of Manhattan are everything." },
+  { name: "DUMBO", neighbourhood: "Brooklyn", lat: 40.7034, lng: -73.9896, description: "Most Instagrammed spot in NYC — the bridge framed between the buildings is iconic." },
+  // CHINATOWN
+  { name: "Wo Hop", neighbourhood: "Chinatown", lat: 40.7150, lng: -73.9990, description: "Classic Chinatown institution — been there forever, always packed for a reason." },
+  // LITTLE ITALY / LOWER EAST SIDE
+  { name: "Eileen's Special Cheesecake", neighbourhood: "Little Italy", lat: 40.7194, lng: -74.0006, description: "The cheesecake here is unreal. Get a slice, eat it on the street." },
+  { name: "Lombardi's", neighbourhood: "Little Italy", lat: 40.7220, lng: -74.0000, description: "America's first pizza restaurant. The coal-fired pizza is worth the wait." },
+  { name: "Katz's Delicatessen", neighbourhood: "Lower East Side", lat: 40.7222, lng: -73.9874, description: "New York staple — smoked meats, massive sandwiches. Very long line but totally worth it." },
+  { name: "Russ & Daughters", neighbourhood: "Lower East Side", lat: 40.7222, lng: -73.9878, description: "Bagels, cream soda, smoked salmon — the full New York Jewish deli experience." },
+  { name: "Russ & Daughters Cafe", neighbourhood: "Lower East Side", lat: 40.7198, lng: -73.9896, description: "The sit-down version — really nice, take your time here." },
+  { name: "Golden Diner", neighbourhood: "Lower East Side", lat: 40.7132, lng: -73.9957, description: "Most famous pancakes in NYC right now. Instagram darling that actually delivers." },
+  // SOHO / WEST VILLAGE / GREENWICH
+  { name: "Shuka", neighbourhood: "SoHo", lat: 40.7267, lng: -74.0023, description: "Mediterranean in SoHo — beautiful food, beautiful room." },
+  { name: "Via Carota", neighbourhood: "West Village", lat: 40.7327, lng: -74.0037, description: "Best cacio e pepe in the city, full stop. Book ahead or wait in line — either way, go." },
+  { name: "Arthur and Sons", neighbourhood: "West Village", lat: 40.7261, lng: -74.0004, description: "Get the spicy rigatoni AND the Spumoni dessert — both are non-negotiable." },
+  { name: "Joe's Pizza", neighbourhood: "West Village", lat: 40.7307, lng: -74.0022, description: "Classic NY slice, the OG on Carmine Street. No debate, just eat it." },
+  { name: "Magnolia Bakery", neighbourhood: "West Village", lat: 40.7333, lng: -74.0030, description: "The banana pudding here is legendary — get the biggest cup." },
+  { name: "Van Leeuwen Ice Cream", neighbourhood: "West Village", lat: 40.7335, lng: -74.0018, description: "Best ice cream in NYC, the flavors are insane." },
+  { name: "Off the Wagon", neighbourhood: "West Village", lat: 40.7291, lng: -74.0016, description: "Party bar — this whole street is full of college bars, great if you want a fun night out." },
+  { name: "Washington Square Park", neighbourhood: "Greenwich Village", lat: 40.7308, lng: -74.0002, description: "The arch, the fountain, the performers — this park has its own energy. Just sit for a bit." },
+  { name: "Strand Bookstore", neighbourhood: "Union Square", lat: 40.7331, lng: -73.9910, description: "18 miles of books — you can get lost here for hours. Always worth a browse." },
+  // EAST VILLAGE
+  { name: "Soothr", neighbourhood: "East Village", lat: 40.7266, lng: -73.9823, description: "Really good Thai in the East Village — loved eating here." },
+  // CHELSEA / HUDSON YARDS
+  { name: "Shukette", neighbourhood: "Chelsea", lat: 40.7483, lng: -74.0008, description: "Middle Eastern in Chelsea — great vibes and great food." },
+  { name: "Kame", neighbourhood: "Chelsea", lat: 40.7481, lng: -74.0003, description: "Amazing ramen, I had the tonkotsu. Tiny, not many seats, worth it." },
+  { name: "Mercado Little Spain", neighbourhood: "Hudson Yards", lat: 40.7536, lng: -74.0024, description: "Spanish food market by José Andrés — so much good stuff to try, go hungry." },
+  { name: "Chelsea Market", neighbourhood: "Chelsea", lat: 40.7428, lng: -74.0044, description: "Food hall in a converted factory — walk through, taste things, it's a whole vibe." },
+  { name: "The High Line", neighbourhood: "Chelsea", lat: 40.7480, lng: -74.0048, description: "Elevated park on old railway tracks — walk the whole mile, it's beautiful." },
+  { name: "Little Island", neighbourhood: "Chelsea", lat: 40.7440, lng: -74.0107, description: "The cutest floating park on the Hudson — go on a sunny day." },
+  { name: "EDGE", neighbourhood: "Hudson Yards", lat: 40.7537, lng: -74.0024, description: "Outdoor observation deck with glass floor. Worth it for the views — terrifying in the best way." },
+  { name: "The Vessel", neighbourhood: "Hudson Yards", lat: 40.7536, lng: -74.0030, description: "That giant honeycomb structure — wild to look at up close." },
+  // FLATIRON / UNION SQUARE
+  { name: "Thai Villa", neighbourhood: "Flatiron", lat: 40.7414, lng: -73.9874, description: "Really good Thai in Flatiron — solid go-to." },
+  { name: "Bryant Park", neighbourhood: "Midtown", lat: 40.7536, lng: -73.9832, description: "Little park behind the library — great for sitting and watching the city go by." },
+  // KOREA TOWN / MIDTOWN
+  { name: "Ravagh Persian Grill", neighbourhood: "Korea Town", lat: 40.7461, lng: -73.9872, description: "Great Persian grill near K-Town — the kebabs are really good." },
+  { name: "Culture Espresso", neighbourhood: "Midtown", lat: 40.7533, lng: -73.9869, description: "The chocolate chip cookies here are dangerous — you'll go back for more." },
+  { name: "Halal Guys", neighbourhood: "Midtown", lat: 40.7614, lng: -73.9776, description: "Chicken over rice, extra garlic sauce. New York staple — you HAVE to try it." },
+  { name: "MoMA", neighbourhood: "Midtown", lat: 40.7614, lng: -73.9776, description: "Modern art museum — even if you're not an art person, this one converts you." },
+  { name: "St. Patrick's Cathedral", neighbourhood: "Midtown", lat: 40.7585, lng: -73.9760, description: "Stunning cathedral — Rockefeller Center is right next door, there's usually a market too." },
+  { name: "Rockefeller Center", neighbourhood: "Midtown", lat: 40.7587, lng: -73.9787, description: "The Top of the Rock views are stunning. Come for the vibes, stay for the view." },
+  { name: "Times Square", neighbourhood: "Midtown", lat: 40.7580, lng: -73.9855, description: "I mean... you kind of have to go. Also great for catching a Broadway show." },
+  { name: "Empire State Building", neighbourhood: "Midtown", lat: 40.7484, lng: -73.9967, description: "Classic NYC — book tickets in advance or the line is brutal." },
+  // HELL'S KITCHEN
+  { name: "OBAO", neighbourhood: "Hell's Kitchen", lat: 40.7626, lng: -73.9846, description: "Great Asian spot — I love their khao suey, get it." },
+  { name: "Philippe Chow", neighbourhood: "Midtown East", lat: 40.7637, lng: -73.9707, description: "High-end Chinese — treat yourself, it's worth it for a special night." },
+  // UPPER EAST SIDE
+  { name: "Xi'an Famous Foods", neighbourhood: "Upper East Side", lat: 40.7639, lng: -73.9591, description: "Get the lamb cumin hand-slapped noodles. It's SO good, I still think about them." },
+  { name: "The Met", neighbourhood: "Upper East Side", lat: 40.7794, lng: -73.9632, description: "I love the Met — go to the rooftop with your entry, the view of Central Park is stunning." },
+  // UPPER WEST SIDE
+  { name: "New Absolute Bagels", neighbourhood: "Manhattan Valley", lat: 40.8024, lng: -73.9661, description: "Phenomenal bagels — classic New York, no frills, perfect." },
+  { name: "Mama's Too", neighbourhood: "Upper West Side", lat: 40.8015, lng: -73.9668, description: "Viral chicken alla vodka sandwich — blew up on Instagram and totally deserved it." },
+  { name: "American Museum of Natural History", neighbourhood: "Upper West Side", lat: 40.7813, lng: -73.9740, description: "Night at the Museum vibes — the dinosaur skeletons and the blue whale are unreal." },
+  { name: "Central Park", neighbourhood: "Central Park", lat: 40.7812, lng: -73.9665, description: "Bethesda Fountain, Sheep Meadow, Belvedere Castle — rent a bike if you have time." },
+  // HARLEM
+  { name: "Sylvia's Restaurant", neighbourhood: "Harlem", lat: 40.8093, lng: -73.9440, description: "Famous Black Southern food in Harlem — the fried chicken is iconic. Super famous place." },
+  // FINANCIAL DISTRICT
+  { name: "The Dead Rabbit", neighbourhood: "Financial District", lat: 40.7033, lng: -74.0107, description: "Really good bar — classic New York cocktail spot, go for a drink." },
+  { name: "Stone Street", neighbourhood: "Financial District", lat: 40.7038, lng: -74.0099, description: "A whole cobblestone street of bars — great for after-work drinks, very New York." },
+  { name: "9/11 Memorial", neighbourhood: "Financial District", lat: 40.7115, lng: -74.0134, description: "Really moving and important to see. Go with space to feel it." },
+  // GOVERNORS ISLAND
+  { name: "Governor's Island", neighbourhood: "Governors Island", lat: 40.6895, lng: -74.0172, description: "Day trip — ferry from FiDi, spectacular views of Manhattan and the Statue of Liberty. Go with friends!" },
+];
+
+const SUBWAY_STATIONS = [
+  { name: "Times Sq–42 St", lines: "1 2 3 N Q R W A C E", lat: 40.7557, lng: -73.9870, color: "#ee352e" },
+  { name: "14 St–Union Sq", lines: "4 5 6 L N Q R W", lat: 40.7351, lng: -73.9903, color: "#00933c" },
+  { name: "Grand Central–42 St", lines: "4 5 6 7 S", lat: 40.7527, lng: -73.9772, color: "#00933c" },
+  { name: "Fulton St", lines: "2 3 4 5 A C J Z", lat: 40.7092, lng: -74.0072, color: "#ee352e" },
+  { name: "34 St–Penn Station", lines: "1 2 3 A C E", lat: 40.7506, lng: -73.9971, color: "#ee352e" },
+  { name: "72 St (B/C)", lines: "B C", lat: 40.7769, lng: -73.9814, color: "#ff6319" },
+  { name: "86 St (4/5/6)", lines: "4 5 6", lat: 40.7797, lng: -73.9557, color: "#00933c" },
+  { name: "Canal St", lines: "A C E J N Q R Z 6", lat: 40.7196, lng: -74.0006, color: "#ee352e" },
+  { name: "Atlantic Av–Barclays Ctr", lines: "2 3 4 5 B D N Q R", lat: 40.6843, lng: -73.9778, color: "#ee352e" },
+  { name: "Bedford Av", lines: "L", lat: 40.7170, lng: -73.9563, color: "#a7a9ac" },
+  { name: "Christopher St", lines: "1 2", lat: 40.7331, lng: -74.0029, color: "#ee352e" },
+  { name: "Bleecker St", lines: "6", lat: 40.7253, lng: -73.9944, color: "#00933c" },
+  { name: "23 St (C/E)", lines: "C E", lat: 40.7451, lng: -74.0012, color: "#0039a6" },
+  { name: "Delancey St", lines: "F J M Z", lat: 40.7182, lng: -73.9889, color: "#ff6319" },
+  { name: "Astor Pl", lines: "6", lat: 40.7301, lng: -73.9907, color: "#00933c" },
+  { name: "Jay St–MetroTech", lines: "A C F R", lat: 40.6922, lng: -73.9872, color: "#0039a6" },
+  { name: "High St–Brooklyn Bridge", lines: "A C", lat: 40.6993, lng: -73.9901, color: "#0039a6" },
+  { name: "Prospect Park", lines: "B Q", lat: 40.6615, lng: -73.9626, color: "#ff6319" },
+];
+
+function showHome() {
+  document.getElementById('home-screen').classList.add('active');
+  document.getElementById('results-screen').classList.remove('active');
+}
+function showResults() {
+  document.getElementById('home-screen').classList.remove('active');
+  document.getElementById('results-screen').classList.add('active');
+}
+function setLoading(text) {
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('loading-text').textContent = text;
+  document.getElementById('places-list').innerHTML = '';
+  document.getElementById('error-msg').style.display = 'none';
+  document.getElementById('subway-section').style.display = 'none';
+}
+function showError(msg) {
+  document.getElementById('loading').style.display = 'none';
+  const el = document.getElementById('error-msg');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function haversineDistance(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+function nearestSubway(lat, lng) {
+  return SUBWAY_STATIONS.reduce((best, s) => {
+    const d = haversineDistance(lat, lng, s.lat, s.lng);
+    return d < best.dist ? { ...s, dist: d } : best;
+  }, { dist: Infinity });
+}
+function metersToWalk(m) {
+  const mins = Math.round(m / 80);
+  return mins <= 1 ? "1 min walk" : `${mins} min walk`;
+}
+function renderPlaces(places, lat, lng) {
+  document.getElementById('loading').style.display = 'none';
+  const list = document.getElementById('places-list');
+  list.innerHTML = '';
+  places.forEach(p => {
+    const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(p.name + ' New York City')}`;
+    const card = document.createElement('div');
+    card.className = 'place-card';
+    card.innerHTML = `<div class="place-name">${p.name}</div><div class="place-desc">${p.description}</div><a class="maps-link" href="${mapsUrl}" target="_blank">↗ Open in Google Maps</a>`;
+    list.appendChild(card);
+  });
+  const sub = nearestSubway(lat, lng);
+  document.getElementById('subway-badge').style.background = sub.color;
+  document.getElementById('subway-badge').textContent = sub.lines.split(' ')[0];
+  document.getElementById('subway-name').textContent = sub.name;
+  document.getElementById('subway-detail').textContent = `${metersToWalk(sub.dist)} · Lines ${sub.lines}`;
+  document.getElementById('subway-section').style.display = 'block';
+}
+
+function getNearby(mode) {
+  const isNishi = mode === 'nishi';
+  document.getElementById('results-title').innerHTML = isNishi ? 'Nishi\'s <em>picks near you</em>' : 'What\'s <em>nearby</em>';
+  showResults();
+  setLoading("Finding your location...");
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const { latitude: lat, longitude: lng } = pos.coords;
+      setLoading(isNishi ? "Finding Nishi's picks near you..." : "Asking Claude what's nearby...");
+      isNishi ? fetchNishiPicks(lat, lng) : fetchGeneralNearby(lat, lng);
+    },
+    () => showError("Couldn't get your location. Open this in Chrome (not Safari) for testing, or deploy to Vercel for full mobile access.")
+  );
+}
+
+function fetchGeneralNearby(lat, lng) {
+  fetch("/api/claude", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      model: "claude-haiku-4-5-20251001", max_tokens: 1024,
+      system: `You are a hyper-local NYC guide for Abhiruchi, a visitor who loves chill, low-key spots: craft beer bars, independent cafes, bookshops, parks, galleries, and neighbourhood gems. She does NOT like clubs, loud nightlife, or dancing venues — never suggest those. Given GPS coordinates, suggest exactly 4 things to do within a 10 minute walk. Do not suggest the exact location the user is at. Respond ONLY as a valid JSON array: [{"name": "place name", "description": "one engaging sentence"}]. No markdown, just the JSON array.`,
+      messages: [{ role: "user", content: `I'm at ${lat}, ${lng} in New York City.` }]
+    })
+  }).then(r => r.json()).then(data => renderPlaces(JSON.parse(data.content[0].text), lat, lng))
+  .catch(() => showError("Something went wrong. Check your API key and try again."));
+}
+
+function fetchNishiPicks(lat, lng) {
+  const sorted = NISHI_PICKS.map(p => ({ ...p, dist: haversineDistance(lat, lng, p.lat, p.lng) })).sort((a, b) => a.dist - b.dist).slice(0, 5);
+  const picksSummary = sorted.map(p => `${p.name} (${p.neighbourhood}): ${p.description}`).join('\n');
+  fetch("/api/claude", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      model: "claude-haiku-4-5-20251001", max_tokens: 1024,
+      system: `You are presenting Nishi's personal NYC picks to her friend Abhiruchi. Abhiruchi loves chill, low-key spots — craft beer bars, cafes, parks, bookshops, neighbourhood gems. She does NOT like clubs, loud bars, or dancing venues — if any pick in the list skews that way, deprioritise it and pick something more her vibe instead. Return the top 4 as JSON: [{"name": "place name", "description": "warm personal sentence as if Nishi is texting her friend"}]. Direct, loving, like a best friend's recommendation. No markdown, just the JSON array.`,
+      messages: [{ role: "user", content: `Abhiruchi is near ${lat}, ${lng}. Nishi's closest picks:\n${picksSummary}` }]
+    })
+  }).then(r => r.json()).then(data => renderPlaces(JSON.parse(data.content[0].text), lat, lng))
+  .catch(() => showError("Something went wrong. Check your API key and try again."));
+}
+
+function askNYC() {
+  const q = document.getElementById('qa-input').value.trim();
+  if (!q) return;
+  const responseEl = document.getElementById('qa-response');
+  responseEl.textContent = "...";
+  responseEl.style.display = 'block';
+  fetch("/api/claude", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      model: "claude-haiku-4-5-20251001", max_tokens: 300,
+      system: `You are a knowledgeable NYC guide for Abhiruchi, a visitor who loves chill spots — craft beer, cafes, parks, low-key neighbourhood places. She does not like clubs or dancing. Answer questions about New York City only. If unrelated, reply: "I'm your NYC Margdarshak — ask me something about New York!" Keep answers brief, warm, useful. No bullet points.`,
+      messages: [{ role: "user", content: q }]
+    })
+  }).then(r => r.json()).then(data => { responseEl.textContent = data.content[0].text; })
+  .catch(() => { responseEl.textContent = "Something went wrong. Please try again."; });
+}
+
+document.getElementById('qa-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); askNYC(); }
+});
+</script>
+</body>
+</html>

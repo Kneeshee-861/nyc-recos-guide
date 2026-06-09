@@ -613,7 +613,7 @@ function fetchGeneralNearby(lat, lng) {
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
       model: "claude-haiku-4-5-20251001", max_tokens: 1024,
-      system: `You are a hyper-local NYC guide for Abhiruchi, a visitor who loves chill, low-key spots: craft beer bars, independent cafes, bookshops, parks, galleries, and neighbourhood gems. She does NOT like clubs, loud nightlife, or dancing venues — never suggest those. Given GPS coordinates, suggest exactly 4 things to do within a 10 minute walk. Do not suggest the exact location the user is at. Output ONLY a raw JSON array — no markdown, no code blocks, no backticks. Start your response with [ and end with ]. Format: [{"name": "place name", "description": "one engaging sentence"}]`,
+      system: `You are a hyper-local NYC guide for Abhiruchi, a visitor who loves chill, low-key spots: craft beer bars, independent cafes, bookshops, parks, galleries, and neighbourhood gems. She does NOT like clubs, loud nightlife, or dancing venues — never suggest those. Given GPS coordinates, suggest exactly 4 things to do within a 10 minute walk. Do not suggest the exact location the user is at. If the coordinates are not in New York City, return: [{"name": "Not in NYC!", "description": "This feature works when you're in New York 🗽 Try Nishi's Picks instead — that works anywhere!"}]. Output ONLY a raw JSON array — no markdown, no code blocks, no backticks. Start your response with [ and end with ]. Format: [{"name": "place name", "description": "one engaging sentence"}]`,
       messages: [{ role: "user", content: `I'm at ${lat}, ${lng} in New York City.` }]
     })
   }).then(r => r.json()).then(data => renderPlaces(parseClaudeJSON(data.content[0].text), lat, lng))

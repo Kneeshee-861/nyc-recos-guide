@@ -553,6 +553,10 @@ const SUBWAY_STATIONS = [
 function showHome() {
   document.getElementById('home-screen').classList.add('active');
   document.getElementById('results-screen').classList.remove('active');
+  document.getElementById('qa-input').value = '';
+  const r = document.getElementById('qa-response');
+  r.innerHTML = '';
+  r.style.display = 'none';
 }
 function showResults() {
   document.getElementById('home-screen').classList.remove('active');
@@ -615,10 +619,10 @@ function renderPlaces(places, lat, lng) {
 let currentLat = null, currentLng = null, currentMode = null, currentPlaces = [];
 
 const CATEGORY_TYPES = {
-  food: ['restaurant', 'bar', 'food', 'meal_takeaway', 'meal_delivery'],
-  cafe: ['cafe', 'bakery', 'ice_cream_shop', 'dessert_shop', 'coffee_shop'],
-  park: ['park', 'garden', 'nature_reserve', 'national_park'],
-  sights: ['museum', 'tourist_attraction', 'art_gallery', 'church', 'place_of_worship', 'landmark', 'book_store']
+  food: ['restaurant', 'bar', 'food', 'meal_takeaway', 'meal_delivery', 'american_restaurant', 'chinese_restaurant', 'indian_restaurant', 'italian_restaurant', 'japanese_restaurant', 'korean_restaurant', 'mediterranean_restaurant', 'mexican_restaurant', 'pizza_restaurant', 'ramen_restaurant', 'thai_restaurant', 'vegan_restaurant', 'vegetarian_restaurant', 'fast_food_restaurant', 'hamburger_restaurant', 'sandwich_shop', 'deli', 'food_court', 'brunch_restaurant'],
+  cafe: ['cafe', 'bakery', 'coffee_shop', 'ice_cream_shop', 'dessert_shop', 'tea_house', 'bagel_shop', 'donut_shop', 'juice_shop', 'patisserie'],
+  park: ['park', 'garden', 'national_park', 'nature_reserve', 'botanical_garden', 'playground', 'state_park', 'waterfront'],
+  sights: ['museum', 'tourist_attraction', 'art_gallery', 'church', 'mosque', 'temple', 'hindu_temple', 'synagogue', 'place_of_worship', 'landmark', 'historical_landmark', 'book_store', 'movie_theater', 'performing_arts_theater', 'cultural_center', 'aquarium', 'zoo', 'observation_deck']
 };
 
 function getNearby(mode) {
@@ -663,7 +667,12 @@ function applyFilter(cat) {
     } else {
       const typeList = CATEGORY_TYPES[cat] || [];
       const filtered = currentPlaces.filter(p => p.types?.some(t => typeList.includes(t)));
-      renderPlaces(filtered.length ? filtered : currentPlaces, currentLat, currentLng);
+      if (filtered.length) {
+        renderPlaces(filtered, currentLat, currentLng);
+      } else {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('places-list').innerHTML = `<p style="color:var(--muted);font-size:14px;padding:16px 0;">No ${cat} spots found nearby — tap All to see everything.</p>`;
+      }
     }
   }
 }
@@ -731,7 +740,7 @@ function fetchGeneralNearby(lat, lng) {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001', max_tokens: 600,
-        system: `You are a warm NYC guide for Abhiruchi, who loves chill spots — cafes, parks, independent restaurants, bookshops, galleries. She does NOT like clubs, loud nightlife, or chains. Given a list of real nearby places, pick exactly 4 that suit her vibe. Output ONLY a raw JSON array — no markdown, no code blocks, no backticks. Start with [ and end with ]. Format: [{"name": "exact place name from the list", "description": "one warm sentence as if a friend is texting her"}]`,
+        system: `You are a warm NYC guide for Abhiruchi, who loves chill spots — cafes, parks, independent restaurants, bookshops, galleries. She does NOT like clubs or loud nightlife. She prefers less red meat and seafood — chicken is great, avoid heavy steakhouses or seafood-only spots. If suggesting a bar, only suggest ones known for craft beer or a good beer selection — no cocktail bars or clubs. Given a list of real nearby places, pick exactly 4 that suit her vibe. Output ONLY a raw JSON array — no markdown, no code blocks, no backticks. Start with [ and end with ]. Format: [{"name": "exact place name from the list", "description": "one warm sentence as if a friend is texting her"}]`,
         messages: [{ role: 'user', content: `Real places within 10 min walk:\n${placesList}\n\nPick 4 for Abhiruchi.` }]
       })
     })
@@ -796,7 +805,11 @@ function askNYC() {
       system: `You are a knowledgeable NYC guide for Abhiruchi, a visitor who loves chill spots — craft beer, cafes, parks, low-key neighbourhood places. She does not like clubs or dancing. Answer questions about New York City only. If unrelated, reply: "I'm your NYC Margdarshak — ask me something about New York!" Keep answers brief, warm, useful. No bullet points.`,
       messages: [{ role: "user", content: q }]
     })
-  }).then(r => r.json()).then(data => { responseEl.textContent = data.content[0].text; })
+  }).then(r => r.json()).then(data => {
+    responseEl.innerHTML = data.content[0].text
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
+  })
   .catch(() => { responseEl.textContent = "Something went wrong. Please try again."; });
 }
 

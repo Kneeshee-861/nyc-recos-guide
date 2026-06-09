@@ -602,16 +602,21 @@ function getNearby(mode) {
   );
 }
 
+function parseClaudeJSON(text) {
+  // Claude sometimes wraps JSON in ```json ... ``` — strip it before parsing
+  return JSON.parse(text.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim());
+}
+
 function fetchGeneralNearby(lat, lng) {
   fetch("/api/claude", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
       model: "claude-haiku-4-5-20251001", max_tokens: 1024,
-      system: `You are a hyper-local NYC guide for Abhiruchi, a visitor who loves chill, low-key spots: craft beer bars, independent cafes, bookshops, parks, galleries, and neighbourhood gems. She does NOT like clubs, loud nightlife, or dancing venues — never suggest those. Given GPS coordinates, suggest exactly 4 things to do within a 10 minute walk. Do not suggest the exact location the user is at. Respond ONLY as a valid JSON array: [{"name": "place name", "description": "one engaging sentence"}]. No markdown, just the JSON array.`,
+      system: `You are a hyper-local NYC guide for Abhiruchi, a visitor who loves chill, low-key spots: craft beer bars, independent cafes, bookshops, parks, galleries, and neighbourhood gems. She does NOT like clubs, loud nightlife, or dancing venues — never suggest those. Given GPS coordinates, suggest exactly 4 things to do within a 10 minute walk. Do not suggest the exact location the user is at. Output ONLY a raw JSON array — no markdown, no code blocks, no backticks. Start your response with [ and end with ]. Format: [{"name": "place name", "description": "one engaging sentence"}]`,
       messages: [{ role: "user", content: `I'm at ${lat}, ${lng} in New York City.` }]
     })
-  }).then(r => r.json()).then(data => renderPlaces(JSON.parse(data.content[0].text), lat, lng))
+  }).then(r => r.json()).then(data => renderPlaces(parseClaudeJSON(data.content[0].text), lat, lng))
   .catch(() => showError("Something went wrong. Check your API key and try again."));
 }
 
@@ -623,10 +628,10 @@ function fetchNishiPicks(lat, lng) {
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
       model: "claude-haiku-4-5-20251001", max_tokens: 1024,
-      system: `You are presenting Nishi's personal NYC picks to her friend Abhiruchi. Abhiruchi loves chill, low-key spots — craft beer bars, cafes, parks, bookshops, neighbourhood gems. She does NOT like clubs, loud bars, or dancing venues — if any pick in the list skews that way, deprioritise it and pick something more her vibe instead. Return the top 4 as JSON: [{"name": "place name", "description": "warm personal sentence as if Nishi is texting her friend"}]. Direct, loving, like a best friend's recommendation. No markdown, just the JSON array.`,
+      system: `You are presenting Nishi's personal NYC picks to her friend Abhiruchi. Abhiruchi loves chill, low-key spots — craft beer bars, cafes, parks, bookshops, neighbourhood gems. She does NOT like clubs, loud bars, or dancing venues — if any pick in the list skews that way, deprioritise it and pick something more her vibe instead. Output ONLY a raw JSON array — no markdown, no code blocks, no backticks. Start your response with [ and end with ]. Format: [{"name": "place name", "description": "warm personal sentence as if Nishi is texting her friend"}]. Direct, loving, like a best friend's recommendation.`,
       messages: [{ role: "user", content: `Abhiruchi is near ${lat}, ${lng}. Nishi's closest picks:\n${picksSummary}` }]
     })
-  }).then(r => r.json()).then(data => renderPlaces(JSON.parse(data.content[0].text), lat, lng))
+  }).then(r => r.json()).then(data => renderPlaces(parseClaudeJSON(data.content[0].text), lat, lng))
   .catch(() => showError("Something went wrong. Check your API key and try again."));
 }
 

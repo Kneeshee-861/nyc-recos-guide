@@ -572,8 +572,8 @@ function nearestSubway(lat, lng) {
   }, { dist: Infinity });
 }
 function metersToWalk(m) {
-  const mins = Math.round(m / 80);
-  return mins <= 1 ? "1 min walk" : `${mins} min walk`;
+  const mins = Math.round((m * 1.4) / 70);
+  return mins <= 1 ? "1 min walk" : `~${mins} min walk`;
 }
 function renderPlaces(places, lat, lng) {
   document.getElementById('loading').style.display = 'none';

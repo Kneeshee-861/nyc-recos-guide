@@ -649,19 +649,60 @@ function parseClaudeJSON(text) {
 }
 
 function fetchGeneralNearby(lat, lng) {
-  fetch("/api/claude", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({
-      model: "claude-haiku-4-5-20251001", max_tokens: 1024,
-      system: `You are a hyper-local NYC guide for Abhiruchi, a visitor who loves chill, low-key spots: craft beer bars, independent cafes, bookshops, parks, galleries, and neighbourhood gems. She does NOT like clubs, loud nightlife, or dancing venues — never suggest those. Given GPS coordinates, suggest exactly 4 things to do within a 10 minute walk. Do not suggest the exact location the user is at. If the coordinates are not in New York City, return: [{"name": "Not in NYC!", "description": "This feature works when you're in New York 🗽 Try Nishi's Picks instead — that works anywhere!"}]. Output ONLY a raw JSON array — no markdown, no code blocks, no backticks. Start your response with [ and end with ]. Format: [{"name": "place name", "description": "one engaging sentence"}]`,
-      messages: [{ role: "user", content: `I'm at ${lat}, ${lng} in New York City.` }]
+  // Step 1: Get real nearby places from Google
+  fetch('/api/places', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ mode: 'nearby', lat, lng, radius: 800 })
+  })
+  .then(r => r.json())
+  .then(googlePlaces => {
+    if (!googlePlaces.length) throw new Error('No places found nearby');
+
+    // Filter out things Abhiruchi doesn't need (transit, banks, hotels, parking)
+    const skip = ['transit_station', 'subway_station', 'bus_station', 'lodging', 'gas_station', 'atm', 'bank', 'parking', 'car_wash', 'car_dealer'];
+    const filtered = googlePlaces.filter(p => !p.types?.some(t => skip.includes(t)));
+
+    // Build a summary list for Claude — just names + types so Claude can write descriptions
+    const placesList = filtered.slice(0, 12).map(p =>
+      `- ${p.displayName?.text} (${p.types?.slice(0, 2).join(', ')})`
+    ).join('\n');
+
+    setLoading("Writing descriptions...");
+
+    // Step 2: Ask Claude to pick 4 and write warm descriptions
+    return fetch('/api/claude', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001', max_tokens: 600,
+        system: `You are a warm NYC guide for Abhiruchi, who loves chill spots — cafes, parks, independent restaurants, bookshops, galleries. She does NOT like clubs, loud nightlife, or chains. Given a list of real nearby places, pick exactly 4 that suit her vibe. Output ONLY a raw JSON array — no markdown, no code blocks, no backticks. Start with [ and end with ]. Format: [{"name": "exact place name from the list", "description": "one warm sentence as if a friend is texting her"}]`,
+        messages: [{ role: 'user', content: `Real places within 10 min walk:\n${placesList}\n\nPick 4 for Abhiruchi.` }]
+      })
     })
-  }).then(r => r.json()).then(async data => {
-    const places = parseClaudeJSON(data.content[0].text);
-    const enriched = await enrichWithPlaces(places);
-    renderPlaces(enriched, lat, lng);
-  }).catch(() => showError("Something went wrong. Check your API key and try again."));
+    .then(r => r.json())
+    .then(data => {
+      const picked = parseClaudeJSON(data.content[0].text);
+
+      // Step 3: Match Claude's picks back to Google's data to get ratings/price/types/distance
+      const enriched = picked.map(p => {
+        const match = filtered.find(g => g.displayName?.text?.toLowerCase() === p.name.toLowerCase())
+                   || filtered.find(g => g.displayName?.text?.toLowerCase().includes(p.name.toLowerCase()));
+        const dist = match?.location ? haversineDistance(lat, lng, match.location.latitude, match.location.longitude) : null;
+        return {
+          ...p,
+          dist,
+          rating: match?.rating,
+          reviewCount: match?.userRatingCount,
+          priceLevel: match?.priceLevel,
+          types: match?.types
+        };
+      });
+
+      renderPlaces(enriched, lat, lng);
+    });
+  })
+  .catch(() => showError("Couldn't find places nearby. Make sure you're in New York City!"));
 }
 
 function fetchNishiPicks(lat, lng) {

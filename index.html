@@ -93,6 +93,11 @@ body { background: var(--bg); font-family: Inter, sans-serif; color: var(--text)
 @keyframes pulse { 0%,80%,100% { opacity: 0.2; transform: scale(0.7); } 40% { opacity: 1; transform: scale(1.15); } }
 .loading p { color: var(--muted); font-size: 13px; margin-top: 14px; }
 
+/* filter bar */
+.filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+.filter-btn { font-size: 12px; font-family: Inter, sans-serif; font-weight: 500; padding: 7px 16px; border-radius: 20px; border: 1px solid var(--border); background: var(--white); color: var(--muted); cursor: pointer; transition: all 0.15s; }
+.filter-btn.active { background: var(--purple); color: white; border-color: var(--purple); }
+
 /* place cards */
 .places-list { margin-bottom: 24px; }
 .place-card { background: var(--white); border: 1px solid var(--border); border-radius: 20px; padding: 18px 20px; margin-bottom: 10px; }
@@ -425,6 +430,14 @@ body { background: var(--bg); font-family: Inter, sans-serif; color: var(--text)
     <p id="loading-text">Finding your location...</p>
   </div>
 
+  <div id="filter-bar" style="display:none;" class="filter-bar">
+    <button class="filter-btn active" data-cat="all" onclick="applyFilter('all')">All</button>
+    <button class="filter-btn" data-cat="food" onclick="applyFilter('food')">🍜 Food</button>
+    <button class="filter-btn" data-cat="cafe" onclick="applyFilter('cafe')">☕ Cafe</button>
+    <button class="filter-btn" data-cat="park" onclick="applyFilter('park')">🌿 Parks</button>
+    <button class="filter-btn" data-cat="sights" onclick="applyFilter('sights')">🗽 Sights</button>
+  </div>
+
   <div class="error-msg" id="error-msg"></div>
   <div class="places-list" id="places-list"></div>
 
@@ -447,73 +460,73 @@ body { background: var(--bg); font-family: Inter, sans-serif; color: var(--text)
 // ── NISHI'S PICKS ──
 const NISHI_PICKS = [
   // BROOKLYN
-  { name: "Oxomoco", neighbourhood: "Greenpoint, Brooklyn", lat: 40.7231, lng: -73.9442, description: "Mexican restaurant in Greenpoint — seriously good food, worth the trip to Brooklyn." },
-  { name: "Bao & Pancakes", neighbourhood: "Brooklyn", lat: 40.6928, lng: -73.9862, description: "Exactly what it sounds like and better than you'd expect. Go." },
-  { name: "L'Industrie Pizzeria", neighbourhood: "Williamsburg", lat: 40.7123, lng: -73.9581, description: "Really really good pizza in Williamsburg — don't skip this one." },
-  { name: "Emmy Squared", neighbourhood: "Williamsburg", lat: 40.7165, lng: -73.9571, description: "The Emmy Squared burger and garlic pesto bread are life-changing. So so good." },
-  { name: "Brooklyn Bridge Park", neighbourhood: "Brooklyn Heights", lat: 40.7024, lng: -73.9969, description: "Walk over the bridge and end up here — the views of Manhattan are everything." },
-  { name: "DUMBO", neighbourhood: "Brooklyn", lat: 40.7034, lng: -73.9896, description: "Most Instagrammed spot in NYC — the bridge framed between the buildings is iconic." },
+  { name: "Oxomoco", category: "food", neighbourhood: "Greenpoint, Brooklyn", lat: 40.7231, lng: -73.9442, description: "Mexican restaurant in Greenpoint — seriously good food, worth the trip to Brooklyn." },
+  { name: "Bao & Pancakes", category: "food", neighbourhood: "Brooklyn", lat: 40.6928, lng: -73.9862, description: "Exactly what it sounds like and better than you'd expect. Go." },
+  { name: "L'Industrie Pizzeria", category: "food", neighbourhood: "Williamsburg", lat: 40.7123, lng: -73.9581, description: "Really really good pizza in Williamsburg — don't skip this one." },
+  { name: "Emmy Squared", category: "food", neighbourhood: "Williamsburg", lat: 40.7165, lng: -73.9571, description: "The Emmy Squared burger and garlic pesto bread are life-changing. So so good." },
+  { name: "Brooklyn Bridge Park", category: "park", neighbourhood: "Brooklyn Heights", lat: 40.7024, lng: -73.9969, description: "Walk over the bridge and end up here — the views of Manhattan are everything." },
+  { name: "DUMBO", category: "sights", neighbourhood: "Brooklyn", lat: 40.7034, lng: -73.9896, description: "Most Instagrammed spot in NYC — the bridge framed between the buildings is iconic." },
   // CHINATOWN
-  { name: "Wo Hop", neighbourhood: "Chinatown", lat: 40.7150, lng: -73.9990, description: "Classic Chinatown institution — been there forever, always packed for a reason." },
+  { name: "Wo Hop", category: "food", neighbourhood: "Chinatown", lat: 40.7150, lng: -73.9990, description: "Classic Chinatown institution — been there forever, always packed for a reason." },
   // LITTLE ITALY / LOWER EAST SIDE
-  { name: "Eileen's Special Cheesecake", neighbourhood: "Little Italy", lat: 40.7194, lng: -74.0006, description: "The cheesecake here is unreal. Get a slice, eat it on the street." },
-  { name: "Lombardi's", neighbourhood: "Little Italy", lat: 40.7220, lng: -74.0000, description: "America's first pizza restaurant. The coal-fired pizza is worth the wait." },
-  { name: "Katz's Delicatessen", neighbourhood: "Lower East Side", lat: 40.7222, lng: -73.9874, description: "New York staple — smoked meats, massive sandwiches. Very long line but totally worth it." },
-  { name: "Russ & Daughters", neighbourhood: "Lower East Side", lat: 40.7222, lng: -73.9878, description: "Bagels, cream soda, smoked salmon — the full New York Jewish deli experience." },
-  { name: "Russ & Daughters Cafe", neighbourhood: "Lower East Side", lat: 40.7198, lng: -73.9896, description: "The sit-down version — really nice, take your time here." },
-  { name: "Golden Diner", neighbourhood: "Lower East Side", lat: 40.7132, lng: -73.9957, description: "Most famous pancakes in NYC right now. Instagram darling that actually delivers." },
+  { name: "Eileen's Special Cheesecake", category: "cafe", neighbourhood: "Little Italy", lat: 40.7194, lng: -74.0006, description: "The cheesecake here is unreal. Get a slice, eat it on the street." },
+  { name: "Lombardi's", category: "food", neighbourhood: "Little Italy", lat: 40.7220, lng: -74.0000, description: "America's first pizza restaurant. The coal-fired pizza is worth the wait." },
+  { name: "Katz's Delicatessen", category: "food", neighbourhood: "Lower East Side", lat: 40.7222, lng: -73.9874, description: "New York staple — smoked meats, massive sandwiches. Very long line but totally worth it." },
+  { name: "Russ & Daughters", category: "cafe", neighbourhood: "Lower East Side", lat: 40.7222, lng: -73.9878, description: "Bagels, cream soda, smoked salmon — the full New York Jewish deli experience." },
+  { name: "Russ & Daughters Cafe", category: "food", neighbourhood: "Lower East Side", lat: 40.7198, lng: -73.9896, description: "The sit-down version — really nice, take your time here." },
+  { name: "Golden Diner", category: "cafe", neighbourhood: "Lower East Side", lat: 40.7132, lng: -73.9957, description: "Most famous pancakes in NYC right now. Instagram darling that actually delivers." },
   // SOHO / WEST VILLAGE / GREENWICH
-  { name: "Shuka", neighbourhood: "SoHo", lat: 40.7267, lng: -74.0023, description: "Mediterranean in SoHo — beautiful food, beautiful room." },
-  { name: "Via Carota", neighbourhood: "West Village", lat: 40.7327, lng: -74.0037, description: "Best cacio e pepe in the city, full stop. Book ahead or wait in line — either way, go." },
-  { name: "Arthur and Sons", neighbourhood: "West Village", lat: 40.7261, lng: -74.0004, description: "Get the spicy rigatoni AND the Spumoni dessert — both are non-negotiable." },
-  { name: "Joe's Pizza", neighbourhood: "West Village", lat: 40.7307, lng: -74.0022, description: "Classic NY slice, the OG on Carmine Street. No debate, just eat it." },
-  { name: "Magnolia Bakery", neighbourhood: "West Village", lat: 40.7333, lng: -74.0030, description: "The banana pudding here is legendary — get the biggest cup." },
-  { name: "Van Leeuwen Ice Cream", neighbourhood: "West Village", lat: 40.7335, lng: -74.0018, description: "Best ice cream in NYC, the flavors are insane." },
-  { name: "Off the Wagon", neighbourhood: "West Village", lat: 40.7291, lng: -74.0016, description: "Party bar — this whole street is full of college bars, great if you want a fun night out." },
-  { name: "Washington Square Park", neighbourhood: "Greenwich Village", lat: 40.7308, lng: -74.0002, description: "The arch, the fountain, the performers — this park has its own energy. Just sit for a bit." },
-  { name: "Strand Bookstore", neighbourhood: "Union Square", lat: 40.7331, lng: -73.9910, description: "18 miles of books — you can get lost here for hours. Always worth a browse." },
+  { name: "Shuka", category: "food", neighbourhood: "SoHo", lat: 40.7267, lng: -74.0023, description: "Mediterranean in SoHo — beautiful food, beautiful room." },
+  { name: "Via Carota", category: "food", neighbourhood: "West Village", lat: 40.7327, lng: -74.0037, description: "Best cacio e pepe in the city, full stop. Book ahead or wait in line — either way, go." },
+  { name: "Arthur and Sons", category: "food", neighbourhood: "West Village", lat: 40.7261, lng: -74.0004, description: "Get the spicy rigatoni AND the Spumoni dessert — both are non-negotiable." },
+  { name: "Joe's Pizza", category: "food", neighbourhood: "West Village", lat: 40.7307, lng: -74.0022, description: "Classic NY slice, the OG on Carmine Street. No debate, just eat it." },
+  { name: "Magnolia Bakery", category: "cafe", neighbourhood: "West Village", lat: 40.7333, lng: -74.0030, description: "The banana pudding here is legendary — get the biggest cup." },
+  { name: "Van Leeuwen Ice Cream", category: "cafe", neighbourhood: "West Village", lat: 40.7335, lng: -74.0018, description: "Best ice cream in NYC, the flavors are insane." },
+  { name: "Off the Wagon", category: "food", neighbourhood: "West Village", lat: 40.7291, lng: -74.0016, description: "Party bar — this whole street is full of college bars, great if you want a fun night out." },
+  { name: "Washington Square Park", category: "park", neighbourhood: "Greenwich Village", lat: 40.7308, lng: -74.0002, description: "The arch, the fountain, the performers — this park has its own energy. Just sit for a bit." },
+  { name: "Strand Bookstore", category: "sights", neighbourhood: "Union Square", lat: 40.7331, lng: -73.9910, description: "18 miles of books — you can get lost here for hours. Always worth a browse." },
   // EAST VILLAGE
-  { name: "Soothr", neighbourhood: "East Village", lat: 40.7266, lng: -73.9823, description: "Really good Thai in the East Village — loved eating here." },
+  { name: "Soothr", category: "food", neighbourhood: "East Village", lat: 40.7266, lng: -73.9823, description: "Really good Thai in the East Village — loved eating here." },
   // CHELSEA / HUDSON YARDS
-  { name: "Shukette", neighbourhood: "Chelsea", lat: 40.7483, lng: -74.0008, description: "Middle Eastern in Chelsea — great vibes and great food." },
-  { name: "Kame", neighbourhood: "Chelsea", lat: 40.7481, lng: -74.0003, description: "Amazing ramen, I had the tonkotsu. Tiny, not many seats, worth it." },
-  { name: "Mercado Little Spain", neighbourhood: "Hudson Yards", lat: 40.7536, lng: -74.0024, description: "Spanish food market by José Andrés — so much good stuff to try, go hungry." },
-  { name: "Chelsea Market", neighbourhood: "Chelsea", lat: 40.7428, lng: -74.0044, description: "Food hall in a converted factory — walk through, taste things, it's a whole vibe." },
-  { name: "The High Line", neighbourhood: "Chelsea", lat: 40.7480, lng: -74.0048, description: "Elevated park on old railway tracks — walk the whole mile, it's beautiful." },
-  { name: "Little Island", neighbourhood: "Chelsea", lat: 40.7440, lng: -74.0107, description: "The cutest floating park on the Hudson — go on a sunny day." },
-  { name: "EDGE", neighbourhood: "Hudson Yards", lat: 40.7537, lng: -74.0024, description: "Outdoor observation deck with glass floor. Worth it for the views — terrifying in the best way." },
-  { name: "The Vessel", neighbourhood: "Hudson Yards", lat: 40.7536, lng: -74.0030, description: "That giant honeycomb structure — wild to look at up close." },
+  { name: "Shukette", category: "food", neighbourhood: "Chelsea", lat: 40.7483, lng: -74.0008, description: "Middle Eastern in Chelsea — great vibes and great food." },
+  { name: "Kame", category: "food", neighbourhood: "Chelsea", lat: 40.7481, lng: -74.0003, description: "Amazing ramen, I had the tonkotsu. Tiny, not many seats, worth it." },
+  { name: "Mercado Little Spain", category: "food", neighbourhood: "Hudson Yards", lat: 40.7536, lng: -74.0024, description: "Spanish food market by José Andrés — so much good stuff to try, go hungry." },
+  { name: "Chelsea Market", category: "food", neighbourhood: "Chelsea", lat: 40.7428, lng: -74.0044, description: "Food hall in a converted factory — walk through, taste things, it's a whole vibe." },
+  { name: "The High Line", category: "park", neighbourhood: "Chelsea", lat: 40.7480, lng: -74.0048, description: "Elevated park on old railway tracks — walk the whole mile, it's beautiful." },
+  { name: "Little Island", category: "park", neighbourhood: "Chelsea", lat: 40.7440, lng: -74.0107, description: "The cutest floating park on the Hudson — go on a sunny day." },
+  { name: "EDGE", category: "sights", neighbourhood: "Hudson Yards", lat: 40.7537, lng: -74.0024, description: "Outdoor observation deck with glass floor. Worth it for the views — terrifying in the best way." },
+  { name: "The Vessel", category: "sights", neighbourhood: "Hudson Yards", lat: 40.7536, lng: -74.0030, description: "That giant honeycomb structure — wild to look at up close." },
   // FLATIRON / UNION SQUARE
-  { name: "Thai Villa", neighbourhood: "Flatiron", lat: 40.7414, lng: -73.9874, description: "Really good Thai in Flatiron — solid go-to." },
-  { name: "Bryant Park", neighbourhood: "Midtown", lat: 40.7536, lng: -73.9832, description: "Little park behind the library — great for sitting and watching the city go by." },
+  { name: "Thai Villa", category: "food", neighbourhood: "Flatiron", lat: 40.7414, lng: -73.9874, description: "Really good Thai in Flatiron — solid go-to." },
+  { name: "Bryant Park", category: "park", neighbourhood: "Midtown", lat: 40.7536, lng: -73.9832, description: "Little park behind the library — great for sitting and watching the city go by." },
   // KOREA TOWN / MIDTOWN
-  { name: "Ravagh Persian Grill", neighbourhood: "Korea Town", lat: 40.7461, lng: -73.9872, description: "Great Persian grill near K-Town — the kebabs are really good." },
-  { name: "Culture Espresso", neighbourhood: "Midtown", lat: 40.7533, lng: -73.9869, description: "The chocolate chip cookies here are dangerous — you'll go back for more." },
-  { name: "Halal Guys", neighbourhood: "Midtown", lat: 40.7614, lng: -73.9776, description: "Chicken over rice, extra garlic sauce. New York staple — you HAVE to try it." },
-  { name: "MoMA", neighbourhood: "Midtown", lat: 40.7614, lng: -73.9776, description: "Modern art museum — even if you're not an art person, this one converts you." },
-  { name: "St. Patrick's Cathedral", neighbourhood: "Midtown", lat: 40.7585, lng: -73.9760, description: "Stunning cathedral — Rockefeller Center is right next door, there's usually a market too." },
-  { name: "Rockefeller Center", neighbourhood: "Midtown", lat: 40.7587, lng: -73.9787, description: "The Top of the Rock views are stunning. Come for the vibes, stay for the view." },
-  { name: "Times Square", neighbourhood: "Midtown", lat: 40.7580, lng: -73.9855, description: "I mean... you kind of have to go. Also great for catching a Broadway show." },
-  { name: "Empire State Building", neighbourhood: "Midtown", lat: 40.7484, lng: -73.9967, description: "Classic NYC — book tickets in advance or the line is brutal." },
+  { name: "Ravagh Persian Grill", category: "food", neighbourhood: "Korea Town", lat: 40.7461, lng: -73.9872, description: "Great Persian grill near K-Town — the kebabs are really good." },
+  { name: "Culture Espresso", category: "cafe", neighbourhood: "Midtown", lat: 40.7533, lng: -73.9869, description: "The chocolate chip cookies here are dangerous — you'll go back for more." },
+  { name: "Halal Guys", category: "food", neighbourhood: "Midtown", lat: 40.7614, lng: -73.9776, description: "Chicken over rice, extra garlic sauce. New York staple — you HAVE to try it." },
+  { name: "MoMA", category: "sights", neighbourhood: "Midtown", lat: 40.7614, lng: -73.9776, description: "Modern art museum — even if you're not an art person, this one converts you." },
+  { name: "St. Patrick's Cathedral", category: "sights", neighbourhood: "Midtown", lat: 40.7585, lng: -73.9760, description: "Stunning cathedral — Rockefeller Center is right next door, there's usually a market too." },
+  { name: "Rockefeller Center", category: "sights", neighbourhood: "Midtown", lat: 40.7587, lng: -73.9787, description: "The Top of the Rock views are stunning. Come for the vibes, stay for the view." },
+  { name: "Times Square", category: "sights", neighbourhood: "Midtown", lat: 40.7580, lng: -73.9855, description: "I mean... you kind of have to go. Also great for catching a Broadway show." },
+  { name: "Empire State Building", category: "sights", neighbourhood: "Midtown", lat: 40.7484, lng: -73.9967, description: "Classic NYC — book tickets in advance or the line is brutal." },
   // HELL'S KITCHEN
-  { name: "OBAO", neighbourhood: "Hell's Kitchen", lat: 40.7626, lng: -73.9846, description: "Great Asian spot — I love their khao suey, get it." },
-  { name: "Philippe Chow", neighbourhood: "Midtown East", lat: 40.7637, lng: -73.9707, description: "High-end Chinese — treat yourself, it's worth it for a special night." },
+  { name: "OBAO", category: "food", neighbourhood: "Hell's Kitchen", lat: 40.7626, lng: -73.9846, description: "Great Asian spot — I love their khao suey, get it." },
+  { name: "Philippe Chow", category: "food", neighbourhood: "Midtown East", lat: 40.7637, lng: -73.9707, description: "High-end Chinese — treat yourself, it's worth it for a special night." },
   // UPPER EAST SIDE
-  { name: "Xi'an Famous Foods", neighbourhood: "Upper East Side", lat: 40.7639, lng: -73.9591, description: "Get the lamb cumin hand-slapped noodles. It's SO good, I still think about them." },
-  { name: "The Met", neighbourhood: "Upper East Side", lat: 40.7794, lng: -73.9632, description: "I love the Met — go to the rooftop with your entry, the view of Central Park is stunning." },
+  { name: "Xi'an Famous Foods", category: "food", neighbourhood: "Upper East Side", lat: 40.7639, lng: -73.9591, description: "Get the lamb cumin hand-slapped noodles. It's SO good, I still think about them." },
+  { name: "The Met", category: "sights", neighbourhood: "Upper East Side", lat: 40.7794, lng: -73.9632, description: "I love the Met — go to the rooftop with your entry, the view of Central Park is stunning." },
   // UPPER WEST SIDE
-  { name: "New Absolute Bagels", neighbourhood: "Manhattan Valley", lat: 40.8024, lng: -73.9661, description: "Phenomenal bagels — classic New York, no frills, perfect." },
-  { name: "Mama's Too", neighbourhood: "Upper West Side", lat: 40.8015, lng: -73.9668, description: "Viral chicken alla vodka sandwich — blew up on Instagram and totally deserved it." },
-  { name: "American Museum of Natural History", neighbourhood: "Upper West Side", lat: 40.7813, lng: -73.9740, description: "Night at the Museum vibes — the dinosaur skeletons and the blue whale are unreal." },
-  { name: "Central Park", neighbourhood: "Central Park", lat: 40.7812, lng: -73.9665, description: "Bethesda Fountain, Sheep Meadow, Belvedere Castle — rent a bike if you have time." },
+  { name: "New Absolute Bagels", category: "cafe", neighbourhood: "Manhattan Valley", lat: 40.8024, lng: -73.9661, description: "Phenomenal bagels — classic New York, no frills, perfect." },
+  { name: "Mama's Too", category: "food", neighbourhood: "Upper West Side", lat: 40.8015, lng: -73.9668, description: "Viral chicken alla vodka sandwich — blew up on Instagram and totally deserved it." },
+  { name: "American Museum of Natural History", category: "sights", neighbourhood: "Upper West Side", lat: 40.7813, lng: -73.9740, description: "Night at the Museum vibes — the dinosaur skeletons and the blue whale are unreal." },
+  { name: "Central Park", category: "park", neighbourhood: "Central Park", lat: 40.7812, lng: -73.9665, description: "Bethesda Fountain, Sheep Meadow, Belvedere Castle — rent a bike if you have time." },
   // HARLEM
-  { name: "Sylvia's Restaurant", neighbourhood: "Harlem", lat: 40.8093, lng: -73.9440, description: "Famous Black Southern food in Harlem — the fried chicken is iconic. Super famous place." },
+  { name: "Sylvia's Restaurant", category: "food", neighbourhood: "Harlem", lat: 40.8093, lng: -73.9440, description: "Famous Black Southern food in Harlem — the fried chicken is iconic. Super famous place." },
   // FINANCIAL DISTRICT
-  { name: "The Dead Rabbit", neighbourhood: "Financial District", lat: 40.7033, lng: -74.0107, description: "Really good bar — classic New York cocktail spot, go for a drink." },
-  { name: "Stone Street", neighbourhood: "Financial District", lat: 40.7038, lng: -74.0099, description: "A whole cobblestone street of bars — great for after-work drinks, very New York." },
-  { name: "9/11 Memorial", neighbourhood: "Financial District", lat: 40.7115, lng: -74.0134, description: "Really moving and important to see. Go with space to feel it." },
+  { name: "The Dead Rabbit", category: "food", neighbourhood: "Financial District", lat: 40.7033, lng: -74.0107, description: "Really good bar — classic New York cocktail spot, go for a drink." },
+  { name: "Stone Street", category: "food", neighbourhood: "Financial District", lat: 40.7038, lng: -74.0099, description: "A whole cobblestone street of bars — great for after-work drinks, very New York." },
+  { name: "9/11 Memorial", category: "sights", neighbourhood: "Financial District", lat: 40.7115, lng: -74.0134, description: "Really moving and important to see. Go with space to feel it." },
   // GOVERNORS ISLAND
-  { name: "Governor's Island", neighbourhood: "Governors Island", lat: 40.6895, lng: -74.0172, description: "Day trip — ferry from FiDi, spectacular views of Manhattan and the Statue of Liberty. Go with friends!" },
+  { name: "Governor's Island", category: "park", neighbourhood: "Governors Island", lat: 40.6895, lng: -74.0172, description: "Day trip — ferry from FiDi, spectacular views of Manhattan and the Statue of Liberty. Go with friends!" },
 ];
 
 const SUBWAY_STATIONS = [
@@ -576,6 +589,7 @@ function metersToWalk(m) {
   return mins <= 1 ? "1 min walk" : `~${mins} min walk`;
 }
 function renderPlaces(places, lat, lng) {
+  currentPlaces = places;
   document.getElementById('loading').style.display = 'none';
   const list = document.getElementById('places-list');
   list.innerHTML = '';
@@ -598,19 +612,60 @@ function renderPlaces(places, lat, lng) {
   document.getElementById('subway-section').style.display = 'block';
 }
 
+let currentLat = null, currentLng = null, currentMode = null, currentPlaces = [];
+
+const CATEGORY_TYPES = {
+  food: ['restaurant', 'bar', 'food', 'meal_takeaway', 'meal_delivery'],
+  cafe: ['cafe', 'bakery', 'ice_cream_shop', 'dessert_shop', 'coffee_shop'],
+  park: ['park', 'garden', 'nature_reserve', 'national_park'],
+  sights: ['museum', 'tourist_attraction', 'art_gallery', 'church', 'place_of_worship', 'landmark', 'book_store']
+};
+
 function getNearby(mode) {
   const isNishi = mode === 'nishi';
+  currentMode = mode;
   document.getElementById('results-title').innerHTML = isNishi ? 'Nishi\'s <em>picks near you</em>' : 'What\'s <em>nearby</em>';
+  document.getElementById('filter-bar').style.display = 'flex';
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === 'all'));
   showResults();
   setLoading("Finding your location...");
   navigator.geolocation.getCurrentPosition(
     pos => {
       const { latitude: lat, longitude: lng } = pos.coords;
-      setLoading(isNishi ? "Finding Nishi's picks near you..." : "Asking Claude what's nearby...");
+      currentLat = lat; currentLng = lng;
+      setLoading(isNishi ? "Finding Nishi's picks near you..." : "Finding what's nearby...");
       isNishi ? fetchNishiPicks(lat, lng) : fetchGeneralNearby(lat, lng);
     },
     () => showError("Couldn't get your location. Open this in Chrome (not Safari) for testing, or deploy to Vercel for full mobile access.")
   );
+}
+
+function applyFilter(cat) {
+  if (!currentLat) return;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
+
+  if (currentMode === 'nishi') {
+    if (cat === 'all') {
+      setLoading("Finding Nishi's picks near you...");
+      fetchNishiPicks(currentLat, currentLng);
+    } else {
+      const filtered = NISHI_PICKS
+        .filter(p => p.category === cat)
+        .map(p => ({ ...p, dist: haversineDistance(currentLat, currentLng, p.lat, p.lng) }))
+        .sort((a, b) => a.dist - b.dist);
+      setLoading("Filtering picks...");
+      enrichWithPlaces(filtered).then(enriched => renderPlaces(enriched, currentLat, currentLng));
+    }
+  } else {
+    // General Nearby — filter stored results by Google place types
+    if (cat === 'all') {
+      renderPlaces(currentPlaces, currentLat, currentLng);
+    } else {
+      const typeList = CATEGORY_TYPES[cat] || [];
+      const filtered = currentPlaces.filter(p => p.types?.some(t => typeList.includes(t)));
+      renderPlaces(filtered.length ? filtered : currentPlaces, currentLat, currentLng);
+    }
+  }
 }
 
 function formatReviews(n) {

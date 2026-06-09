@@ -15,7 +15,6 @@ module.exports = async function handler(req, res) {
       body: JSON.stringify({ textQuery: query })
     });
     const data = await response.json();
-    if (!data.places?.[0]) return res.status(200).json({ _debug: data });
     res.status(200).json(data.places?.[0] || {});
   } catch (err) {
     res.status(500).json({ error: err.message });

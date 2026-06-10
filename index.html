@@ -463,7 +463,7 @@ const NISHI_PICKS = [
   // BROOKLYN
   { name: "Oxomoco", category: "food", neighbourhood: "Greenpoint, Brooklyn", lat: 40.7231, lng: -73.9442, description: "Mexican restaurant in Greenpoint — seriously good food, worth the trip to Brooklyn." },
   { name: "Bao & Pancakes", category: "food", neighbourhood: "Brooklyn", lat: 40.6928, lng: -73.9862, description: "Exactly what it sounds like and better than you'd expect. Go." },
-  { name: "L'Industrie Pizzeria", category: "food", neighbourhood: "Williamsburg", lat: 40.7123, lng: -73.9581, description: "Really really good pizza in Williamsburg — don't skip this one." },
+  { name: "L'Industrie Pizzeria", category: "food", neighbourhood: "Williamsburg", lat: 40.7123, lng: -73.9581, description: "Really really good pizza — don't skip this one." },
   { name: "Emmy Squared", category: "food", neighbourhood: "Williamsburg", lat: 40.7165, lng: -73.9571, description: "The Emmy Squared burger and garlic pesto bread are life-changing. So so good." },
   { name: "Brooklyn Bridge Park", category: "park", neighbourhood: "Brooklyn Heights", lat: 40.7024, lng: -73.9969, description: "Walk over the bridge and end up here — the views of Manhattan are everything." },
   { name: "DUMBO", category: "sights", neighbourhood: "Brooklyn", lat: 40.7034, lng: -73.9896, description: "Most Instagrammed spot in NYC — the bridge framed between the buildings is iconic." },
@@ -529,6 +529,9 @@ const NISHI_PICKS = [
   // GOVERNORS ISLAND
   { name: "Governor's Island", category: "park", neighbourhood: "Governors Island", lat: 40.6895, lng: -74.0172, description: "Day trip — ferry from FiDi, spectacular views of Manhattan and the Statue of Liberty. Go with friends!" },
 
+  // L'INDUSTRIE PIZZERIA
+  { name: "L'Industrie Pizzeria", category: "food", neighbourhood: "West Village", lat: 40.7273, lng: -74.0013, description: "Really really good pizza — don't skip this one." },
+
   // ── CHAINS — EXTRA LOCATIONS ──────────────────────────────────────────────
 
   // IPPUDO
@@ -537,14 +540,14 @@ const NISHI_PICKS = [
   { name: "IPPUDO Westside", category: "food", neighbourhood: "Hell's Kitchen", lat: 40.7629, lng: -73.9883, description: "The Hell's Kitchen IPPUDO — great ramen and sake in a lively space. Good pre-show option too." },
 
   // EMMY SQUARED / EMILY
-  { name: "Emmy Squared Pizza", category: "food", neighbourhood: "East Village", lat: 40.7257, lng: -73.9841, description: "Emmy Squared in the East Village — the Detroit-style pizza and that burger. Don't skip the garlic pesto bread." },
-  { name: "Emmy Squared Pizza", category: "food", neighbourhood: "Upper East Side", lat: 40.7741, lng: -73.9554, description: "Emmy Squared on the UES — grab the square slices if you're up this way, worth it." },
-  { name: "Emmy Squared Pizza", category: "food", neighbourhood: "Hell's Kitchen", lat: 40.7622, lng: -73.9877, description: "Emmy Squared near the Theater District — perfect pre-show fuel. Consistently great." },
-  { name: "Emmy Squared Pizza", category: "food", neighbourhood: "Midtown West", lat: 40.7692, lng: -73.9832, description: "Emmy Squared near Columbus Circle — brilliant stop before or after Lincoln Center." },
+  { name: "Emmy Squared Pizza: East Village", category: "food", neighbourhood: "East Village", lat: 40.7257, lng: -73.9841, description: "Emmy Squared in the East Village — the Detroit-style pizza and that burger. Don't skip the garlic pesto bread." },
+  { name: "Emmy Squared Pizza: Upper East Side", category: "food", neighbourhood: "Upper East Side", lat: 40.7741, lng: -73.9554, description: "Emmy Squared on the UES — grab the square slices if you're up this way, worth it." },
+  { name: "Emmy Squared Pizza: Hell's Kitchen", category: "food", neighbourhood: "Hell's Kitchen", lat: 40.7622, lng: -73.9877, description: "Emmy Squared near the Theater District — perfect pre-show fuel. Consistently great." },
+  { name: "Emmy Squared Pizza: Midtown West", category: "food", neighbourhood: "Midtown West", lat: 40.7692, lng: -73.9832, description: "Emmy Squared near Columbus Circle — brilliant stop before or after Lincoln Center." },
   { name: "Emily", category: "food", neighbourhood: "West Village", lat: 40.7283, lng: -74.0023, description: "Emily is Emmy Squared's original West Village sister — full bar, gourmet pizzas, this is where it all started." },
 
   // JOE'S PIZZA
-  { name: "Joe's Pizza", category: "food", neighbourhood: "Midtown", lat: 40.7560, lng: -73.9868, description: "Joe's near Times Square — same classic NY slice when you need a quick one in Midtown." },
+  { name: "Joe's Pizza Broadway", category: "food", neighbourhood: "Midtown", lat: 40.7560, lng: -73.9868, description: "Joe's near Times Square — same classic NY slice when you need a quick one in Midtown." },
   { name: "Joe's Pizza", category: "food", neighbourhood: "Financial District", lat: 40.7087, lng: -74.0074, description: "Joe's in FiDi — identical thin-crust, great after the 9/11 Memorial or a downtown wander." },
 
   // ARTICHOKE BASILLE'S
@@ -584,9 +587,9 @@ const NISHI_PICKS = [
   { name: "Anita La Mamma del Gelato", category: "cafe", neighbourhood: "Times Square", lat: 40.7579, lng: -73.9859, description: "Anita right by Times Square — proper Italian gelato in the middle of the madness. Do it." },
 
   // MAGNOLIA BAKERY
-  { name: "Magnolia Bakery", category: "cafe", neighbourhood: "Midtown", lat: 40.7583, lng: -73.9794, description: "Magnolia at Rockefeller Center — iconic banana pudding and frosted cupcakes right in the heart of Midtown." },
+  { name: "Magnolia Bakery - Rockefeller Center", category: "cafe", neighbourhood: "Midtown", lat: 40.7583, lng: -73.9794, description: "Magnolia at Rockefeller Center — iconic banana pudding and frosted cupcakes right in the heart of Midtown." },
   { name: "Magnolia Bakery", category: "cafe", neighbourhood: "Upper West Side", lat: 40.7731, lng: -73.9824, description: "Magnolia on the UWS — classic home-style cakes and pudding, great if you're near Central Park." },
-  { name: "Magnolia Bakery", category: "cafe", neighbourhood: "Midtown East", lat: 40.7527, lng: -73.9778, description: "Magnolia inside Grand Central — grab a pint of banana pudding before your train. Non-negotiable." },
+  { name: "Magnolia Bakery - Grand Central", category: "cafe", neighbourhood: "Midtown East", lat: 40.7527, lng: -73.9778, description: "Magnolia inside Grand Central — grab a pint of banana pudding before your train. Non-negotiable." },
   { name: "Magnolia Bakery", category: "cafe", neighbourhood: "Hudson Yards", lat: 40.7530, lng: -74.0013, description: "Magnolia in Hudson Yards — easy to combine with EDGE or The Vessel if you're up here." },
 ];
 
@@ -774,7 +777,9 @@ function renderPlaces(places, lat, lng) {
   const list = document.getElementById('places-list');
   list.innerHTML = '';
   places.forEach(p => {
-    const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(p.name + ' New York City')}`;
+    const mapsUrl = p.lat && p.lng
+      ? `https://maps.google.com/?q=${p.lat},${p.lng}(${encodeURIComponent(p.name)})`
+      : `https://maps.google.com/?q=${encodeURIComponent(p.name + ' New York City')}`;
     const card = document.createElement('div');
     card.className = p.isNishiPick ? 'place-card nishi-pick' : 'place-card';
     const badgeHtml = p.isNishiPick ? `<div class="nishi-badge">✦ Nishi's pick</div>` : '';
@@ -862,10 +867,10 @@ function applyFilter(cat) {
   .then(r => r.json())
   .then(googlePlaces => {
     const skip = ['transit_station', 'subway_station', 'bus_station', 'lodging', 'gas_station', 'atm', 'bank', 'parking'];
-    const nishiNames = new Set(nishiForCat.map(p => p.name.toLowerCase()));
+    const nishiNames = nishiForCat.map(p => p.name.toLowerCase());
     const googleFiltered = googlePlaces
       .filter(p => !p.types?.some(t => skip.includes(t)))
-      .filter(p => !nishiNames.has(p.displayName?.text?.toLowerCase()))
+      .filter(p => { const g = p.displayName?.text?.toLowerCase() || ''; return !nishiNames.some(n => g.includes(n) || n.includes(g)); })
       .map(p => ({
         name: p.displayName?.text,
         isNishiPick: false,
@@ -969,10 +974,10 @@ function fetchNearby(lat, lng) {
   .then(googlePlaces => {
     // Filter out noise (transit, banks, hotels, parking) and places already in Nishi's picks
     const skip = ['transit_station', 'subway_station', 'bus_station', 'lodging', 'gas_station', 'atm', 'bank', 'parking', 'car_wash', 'car_dealer', 'office', 'corporate_office', 'government_office', 'local_government_office', 'city_hall', 'post_office', 'courthouse', 'embassy', 'insurance_agency', 'real_estate_agency', 'accounting', 'lawyer', 'doctor', 'dentist', 'hospital', 'pharmacy', 'physiotherapist'];
-    const nishiNames = new Set(nishiNearby.map(p => p.name.toLowerCase()));
+    const nishiNames = nishiNearby.map(p => p.name.toLowerCase());
     const googleFiltered = googlePlaces
       .filter(p => !p.types?.some(t => skip.includes(t)))
-      .filter(p => !nishiNames.has(p.displayName?.text?.toLowerCase()))
+      .filter(p => { const g = p.displayName?.text?.toLowerCase() || ''; return !nishiNames.some(n => g.includes(n) || n.includes(g)); })
       .slice(0, 12)
       .map(p => ({
         name: p.displayName?.text,

@@ -625,11 +625,12 @@ function renderPlaces(places, lat, lng) {
 
 let currentLat = null, currentLng = null, currentMode = null, currentPlaces = [], allPlaces = [];
 
+// Types used for Google Places includedTypes search per category
 const CATEGORY_TYPES = {
-  food: ['restaurant', 'bar', 'food', 'meal_takeaway', 'meal_delivery', 'american_restaurant', 'chinese_restaurant', 'indian_restaurant', 'italian_restaurant', 'japanese_restaurant', 'korean_restaurant', 'mediterranean_restaurant', 'mexican_restaurant', 'pizza_restaurant', 'ramen_restaurant', 'thai_restaurant', 'vegan_restaurant', 'vegetarian_restaurant', 'fast_food_restaurant', 'hamburger_restaurant', 'sandwich_shop', 'deli', 'food_court', 'brunch_restaurant', 'wine_bar', 'bar_and_grill'],
-  cafe: ['cafe', 'bakery', 'coffee_shop', 'ice_cream_shop', 'dessert_shop', 'tea_house', 'bagel_shop', 'donut_shop', 'juice_shop', 'patisserie', 'confectionery'],
-  park: ['park', 'garden', 'national_park', 'nature_reserve', 'botanical_garden', 'playground', 'state_park', 'waterfront', 'hiking_area', 'dog_park'],
-  sights: ['museum', 'tourist_attraction', 'art_gallery', 'church', 'mosque', 'temple', 'hindu_temple', 'synagogue', 'place_of_worship', 'landmark', 'historical_landmark', 'book_store', 'movie_theater', 'performing_arts_theater', 'cultural_center', 'aquarium', 'zoo', 'observation_deck', 'visitor_center', 'monument', 'sculpture', 'athletic_field', 'stadium']
+  food: ['restaurant', 'bar', 'meal_takeaway', 'deli', 'sandwich_shop', 'pizza_restaurant', 'ramen_restaurant', 'sushi_restaurant', 'chinese_restaurant', 'indian_restaurant', 'italian_restaurant', 'japanese_restaurant', 'korean_restaurant', 'thai_restaurant', 'mexican_restaurant', 'mediterranean_restaurant', 'american_restaurant', 'brunch_restaurant', 'vegan_restaurant', 'vegetarian_restaurant', 'fast_food_restaurant', 'hamburger_restaurant'],
+  cafe: ['cafe', 'coffee_shop', 'bakery', 'ice_cream_shop', 'dessert_shop', 'bagel_shop', 'donut_shop', 'juice_shop', 'tea_house'],
+  park: ['park', 'national_park', 'hiking_area', 'dog_park', 'garden', 'botanical_garden', 'playground'],
+  sights: ['tourist_attraction', 'museum', 'art_gallery', 'observation_deck', 'cultural_center', 'performing_arts_theater', 'movie_theater', 'aquarium', 'zoo', 'historical_landmark', 'book_store']
 };
 
 function getNearby() {
@@ -655,21 +656,53 @@ function applyFilter(cat) {
 
   if (cat === 'all') {
     renderPlaces(allPlaces, currentLat, currentLng);
-  } else if (cat === 'nishi') {
+    return;
+  }
+
+  if (cat === 'nishi') {
     const filtered = allPlaces.filter(p => p.isNishiPick);
     filtered.length
       ? renderPlaces(filtered, currentLat, currentLng)
       : showEmpty("No Nishi picks within range right now.");
-  } else {
-    const typeList = CATEGORY_TYPES[cat] || [];
-    const filtered = allPlaces.filter(p =>
-      (p.isNishiPick && p.category === cat) ||
-      (!p.isNishiPick && p.types?.some(t => typeList.includes(t)))
-    );
-    filtered.length
-      ? renderPlaces(filtered, currentLat, currentLng)
-      : showEmpty(`No ${cat} spots found nearby — tap All to see everything.`);
+    return;
   }
+
+  // For Food / Cafe / Parks / Sights — fetch fresh from Google with specific types
+  setLoading(`Finding ${cat} spots nearby...`);
+  const includedTypes = CATEGORY_TYPES[cat] || [];
+  const nishiForCat = allPlaces.filter(p => p.isNishiPick && p.category === cat);
+
+  fetch('/api/places', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ mode: 'nearby', lat: currentLat, lng: currentLng, radius: 1000, includedTypes })
+  })
+  .then(r => r.json())
+  .then(googlePlaces => {
+    const skip = ['transit_station', 'subway_station', 'bus_station', 'lodging', 'gas_station', 'atm', 'bank', 'parking'];
+    const nishiNames = new Set(nishiForCat.map(p => p.name.toLowerCase()));
+    const googleFiltered = googlePlaces
+      .filter(p => !p.types?.some(t => skip.includes(t)))
+      .filter(p => !nishiNames.has(p.displayName?.text?.toLowerCase()))
+      .map(p => ({
+        name: p.displayName?.text,
+        isNishiPick: false,
+        dist: p.location ? haversineDistance(currentLat, currentLng, p.location.latitude, p.location.longitude) : null,
+        rating: p.rating,
+        reviewCount: p.userRatingCount,
+        priceLevel: p.priceLevel,
+        types: p.types
+      }));
+    const combined = [...nishiForCat, ...googleFiltered].sort((a, b) => (a.dist || 9999) - (b.dist || 9999));
+    combined.length
+      ? renderPlaces(combined, currentLat, currentLng)
+      : showEmpty(`No ${cat} spots found nearby — tap All to see everything.`);
+  })
+  .catch(() => {
+    nishiForCat.length
+      ? renderPlaces(nishiForCat, currentLat, currentLng)
+      : showEmpty(`No ${cat} spots found nearby — tap All to see everything.`);
+  });
 }
 
 function showEmpty(msg) {

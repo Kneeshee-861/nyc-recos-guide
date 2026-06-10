@@ -623,13 +623,13 @@ function renderPlaces(places, lat, lng) {
   document.getElementById('subway-section').style.display = 'block';
 }
 
-let currentLat = null, currentLng = null, currentMode = null, currentPlaces = [];
+let currentLat = null, currentLng = null, currentMode = null, currentPlaces = [], allPlaces = [];
 
 const CATEGORY_TYPES = {
-  food: ['restaurant', 'bar', 'food', 'meal_takeaway', 'meal_delivery', 'american_restaurant', 'chinese_restaurant', 'indian_restaurant', 'italian_restaurant', 'japanese_restaurant', 'korean_restaurant', 'mediterranean_restaurant', 'mexican_restaurant', 'pizza_restaurant', 'ramen_restaurant', 'thai_restaurant', 'vegan_restaurant', 'vegetarian_restaurant', 'fast_food_restaurant', 'hamburger_restaurant', 'sandwich_shop', 'deli', 'food_court', 'brunch_restaurant'],
-  cafe: ['cafe', 'bakery', 'coffee_shop', 'ice_cream_shop', 'dessert_shop', 'tea_house', 'bagel_shop', 'donut_shop', 'juice_shop', 'patisserie'],
-  park: ['park', 'garden', 'national_park', 'nature_reserve', 'botanical_garden', 'playground', 'state_park', 'waterfront'],
-  sights: ['museum', 'tourist_attraction', 'art_gallery', 'church', 'mosque', 'temple', 'hindu_temple', 'synagogue', 'place_of_worship', 'landmark', 'historical_landmark', 'book_store', 'movie_theater', 'performing_arts_theater', 'cultural_center', 'aquarium', 'zoo', 'observation_deck']
+  food: ['restaurant', 'bar', 'food', 'meal_takeaway', 'meal_delivery', 'american_restaurant', 'chinese_restaurant', 'indian_restaurant', 'italian_restaurant', 'japanese_restaurant', 'korean_restaurant', 'mediterranean_restaurant', 'mexican_restaurant', 'pizza_restaurant', 'ramen_restaurant', 'thai_restaurant', 'vegan_restaurant', 'vegetarian_restaurant', 'fast_food_restaurant', 'hamburger_restaurant', 'sandwich_shop', 'deli', 'food_court', 'brunch_restaurant', 'wine_bar', 'bar_and_grill'],
+  cafe: ['cafe', 'bakery', 'coffee_shop', 'ice_cream_shop', 'dessert_shop', 'tea_house', 'bagel_shop', 'donut_shop', 'juice_shop', 'patisserie', 'confectionery'],
+  park: ['park', 'garden', 'national_park', 'nature_reserve', 'botanical_garden', 'playground', 'state_park', 'waterfront', 'hiking_area', 'dog_park'],
+  sights: ['museum', 'tourist_attraction', 'art_gallery', 'church', 'mosque', 'temple', 'hindu_temple', 'synagogue', 'place_of_worship', 'landmark', 'historical_landmark', 'book_store', 'movie_theater', 'performing_arts_theater', 'cultural_center', 'aquarium', 'zoo', 'observation_deck', 'visitor_center', 'monument', 'sculpture', 'athletic_field', 'stadium']
 };
 
 function getNearby() {
@@ -654,18 +654,16 @@ function applyFilter(cat) {
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
 
   if (cat === 'all') {
-    renderPlaces(currentPlaces, currentLat, currentLng);
+    renderPlaces(allPlaces, currentLat, currentLng);
   } else if (cat === 'nishi') {
-    const filtered = currentPlaces.filter(p => p.isNishiPick);
+    const filtered = allPlaces.filter(p => p.isNishiPick);
     filtered.length
       ? renderPlaces(filtered, currentLat, currentLng)
       : showEmpty("No Nishi picks within range right now.");
   } else {
-    // Filter: Nishi picks by category + Google results by types
     const typeList = CATEGORY_TYPES[cat] || [];
-    const nishiCat = cat === 'park' ? 'park' : cat === 'sights' ? 'sights' : cat;
-    const filtered = currentPlaces.filter(p =>
-      (p.isNishiPick && p.category === nishiCat) ||
+    const filtered = allPlaces.filter(p =>
+      (p.isNishiPick && p.category === cat) ||
       (!p.isNishiPick && p.types?.some(t => typeList.includes(t)))
     );
     filtered.length
@@ -749,13 +747,17 @@ function fetchNearby(lat, lng) {
     // Only enrich Nishi picks with ratings — Google results already have their data, don't touch them
     enrichWithPlaces(nishiNearby).then(enrichedNishi => {
       const combined = [...enrichedNishi, ...googleFiltered].sort((a, b) => (a.dist || 9999) - (b.dist || 9999));
+      allPlaces = combined;
       renderPlaces(combined, lat, lng);
     });
   })
   .catch(() => {
     // If Google fails, still show Nishi's picks
     if (nishiNearby.length) {
-      enrichWithPlaces(nishiNearby).then(enriched => renderPlaces(enriched, lat, lng));
+      enrichWithPlaces(nishiNearby).then(enriched => {
+        allPlaces = enriched;
+        renderPlaces(enriched, lat, lng);
+      });
     } else {
       showError("Couldn't find places nearby. Make sure you're in New York City!");
     }

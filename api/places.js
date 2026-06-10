@@ -18,7 +18,7 @@ module.exports = async function handler(req, res) {
         headers: {
           'X-Goog-Api-Key': process.env.GOOGLE_API_KEY,
           'Content-Type': 'application/json',
-          'X-Goog-FieldMask': 'places.displayName,places.rating,places.userRatingCount,places.priceLevel,places.types,places.location'
+          'X-Goog-FieldMask': 'places.displayName,places.rating,places.userRatingCount,places.priceLevel,places.types,places.location,places.editorialSummary'
         },
         body: JSON.stringify(body)
       });

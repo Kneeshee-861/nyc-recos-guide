@@ -109,7 +109,8 @@ body { background: var(--bg); font-family: Inter, sans-serif; color: var(--text)
 /* place cards */
 .places-list { margin-bottom: 24px; }
 .place-card { background: var(--white); border: 1px solid var(--border); border-radius: 20px; padding: 18px 20px; margin-bottom: 10px; }
-.place-card .place-name { font-family: 'Instrument Serif', serif; font-size: 20px; font-weight: 400; margin-bottom: 6px; }
+.place-card .place-name { font-family: 'Instrument Serif', serif; font-size: 20px; font-weight: 400; margin-bottom: 4px; }
+.place-card .place-cuisine { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
 .place-card .place-desc { font-size: 13px; color: #666; line-height: 1.65; margin-bottom: 14px; }
 .place-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
 .place-distance { font-size: 11px; color: var(--muted); background: var(--bg); border: 1px solid var(--border); padding: 3px 10px; border-radius: 20px; }
@@ -781,8 +782,11 @@ function renderPlaces(places, lat, lng) {
     const ratingHtml = p.rating ? `<span class="place-rating">⭐ ${p.rating} ${formatReviews(p.reviewCount)}</span>` : '';
     const priceHtml = p.priceLevel ? `<span class="place-price">${priceLabel(p.priceLevel)}</span>` : '';
     const vibeHtml = p.isNishiPick ? '' : vibeTag(p.types);
-    const descHtml = p.description ? `<div class="place-desc">${p.description}</div>` : '';
-    card.innerHTML = `${badgeHtml}<div class="place-name">${p.name}</div>${descHtml}<div class="place-meta">${distHtml}${ratingHtml}${priceHtml}${vibeHtml}</div><a class="maps-link" href="${mapsUrl}" target="_blank">↗ Open in Google Maps</a>`;
+    const cuisine = cuisineLabel(p.types);
+    const cuisineHtml = cuisine ? `<div class="place-cuisine">${cuisine}</div>` : '';
+    const desc = p.description || (p.isNishiPick ? '' : (p.editorialSummary || ''));
+    const descHtml = desc ? `<div class="place-desc">${desc}</div>` : '';
+    card.innerHTML = `${badgeHtml}<div class="place-name">${p.name}</div>${cuisineHtml}${descHtml}<div class="place-meta">${distHtml}${ratingHtml}${priceHtml}${vibeHtml}</div><a class="maps-link" href="${mapsUrl}" target="_blank">↗ Open in Google Maps</a>`;
     list.appendChild(card);
   });
   const subs = nearestSubways(lat, lng, 2);
@@ -869,7 +873,8 @@ function applyFilter(cat) {
         rating: p.rating,
         reviewCount: p.userRatingCount,
         priceLevel: p.priceLevel,
-        types: p.types
+        types: p.types,
+        editorialSummary: p.editorialSummary?.text || ''
       }));
     const combined = [...nishiForCat, ...googleFiltered].sort((a, b) => (a.dist || 9999) - (b.dist || 9999));
     combined.length
@@ -895,6 +900,30 @@ function formatReviews(n) {
 function priceLabel(level) {
   const map = { PRICE_LEVEL_FREE: 'Free', PRICE_LEVEL_INEXPENSIVE: '$', PRICE_LEVEL_MODERATE: '$$', PRICE_LEVEL_EXPENSIVE: '$$$', PRICE_LEVEL_VERY_EXPENSIVE: '$$$$' };
   return map[level] || null;
+}
+function cuisineLabel(types) {
+  if (!types) return '';
+  const map = {
+    ramen_restaurant: 'Ramen', sushi_restaurant: 'Sushi', japanese_restaurant: 'Japanese',
+    chinese_restaurant: 'Chinese', korean_restaurant: 'Korean', thai_restaurant: 'Thai',
+    italian_restaurant: 'Italian', pizza_restaurant: 'Pizza', mexican_restaurant: 'Mexican',
+    indian_restaurant: 'Indian', mediterranean_restaurant: 'Mediterranean',
+    american_restaurant: 'American', hamburger_restaurant: 'Burgers',
+    french_restaurant: 'French', spanish_restaurant: 'Spanish',
+    middle_eastern_restaurant: 'Middle Eastern', vietnamese_restaurant: 'Vietnamese',
+    brunch_restaurant: 'Brunch', vegan_restaurant: 'Vegan', vegetarian_restaurant: 'Vegetarian',
+    fast_food_restaurant: 'Fast Food', deli: 'Deli', sandwich_shop: 'Sandwiches',
+    bagel_shop: 'Bagels', bakery: 'Bakery', cafe: 'Café', coffee_shop: 'Coffee',
+    ice_cream_shop: 'Ice Cream', dessert_shop: 'Dessert', bar: 'Bar',
+    park: 'Park', national_park: 'National Park', garden: 'Garden',
+    botanical_garden: 'Botanical Garden', museum: 'Museum', art_gallery: 'Art Gallery',
+    observation_deck: 'Observation Deck', tourist_attraction: 'Attraction',
+    historical_landmark: 'Landmark', book_store: 'Bookstore',
+    performing_arts_theater: 'Theater', movie_theater: 'Cinema',
+    restaurant: 'Restaurant'
+  };
+  for (const t of types) { if (map[t]) return map[t]; }
+  return '';
 }
 function vibeTag(types) {
   if (!types) return '';
@@ -952,7 +981,8 @@ function fetchNearby(lat, lng) {
         rating: p.rating,
         reviewCount: p.userRatingCount,
         priceLevel: p.priceLevel,
-        types: p.types
+        types: p.types,
+        editorialSummary: p.editorialSummary?.text || ''
       }));
 
     // Only enrich Nishi picks with ratings — Google results already have their data, don't touch them

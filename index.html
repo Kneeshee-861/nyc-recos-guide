@@ -450,11 +450,13 @@ body { background: var(--bg); font-family: Inter, sans-serif; color: var(--text)
     <div class="subway-label">Nearest subway</div>
     <div class="subway-card">
       <div class="subway-badge" id="subway-badge">1</div>
-      <div>
+      <div style="flex:1;">
         <div class="subway-name" id="subway-name">—</div>
         <div class="subway-detail" id="subway-detail">—</div>
       </div>
+      <a id="subway-maps-link" href="#" target="_blank" class="maps-link" style="margin:0; flex-shrink:0; font-size:11px;">↗ Maps</a>
     </div>
+    <a id="transit-link" href="#" target="_blank" style="display:block; margin-top:10px; text-align:center; font-size:13px; color:var(--purple); background:var(--purple-light); border:1px solid var(--purple-mid); border-radius:20px; padding:10px 0; text-decoration:none; font-weight:500;">🚌 Plan transit route</a>
   </div>
 
 </div>
@@ -620,6 +622,8 @@ function renderPlaces(places, lat, lng) {
   document.getElementById('subway-badge').textContent = sub.lines.split(' ')[0];
   document.getElementById('subway-name').textContent = sub.name;
   document.getElementById('subway-detail').textContent = `${metersToWalk(sub.dist)} · Lines ${sub.lines}`;
+  document.getElementById('subway-maps-link').href = `https://maps.google.com/?q=${encodeURIComponent(sub.name + ' subway station New York City')}`;
+  document.getElementById('transit-link').href = `https://www.google.com/maps/dir/?api=1&origin=${lat},${lng}&travelmode=transit`;
   document.getElementById('subway-section').style.display = 'block';
 }
 

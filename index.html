@@ -97,6 +97,14 @@ body { background: var(--bg); font-family: Inter, sans-serif; color: var(--text)
 .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
 .filter-btn { font-size: 12px; font-family: Inter, sans-serif; font-weight: 500; padding: 7px 16px; border-radius: 20px; border: 1px solid var(--border); background: var(--white); color: var(--muted); cursor: pointer; transition: all 0.15s; }
 .filter-btn.active { background: var(--purple); color: white; border-color: var(--purple); }
+.nishi-filter-btn { border-color: var(--purple-mid); color: var(--purple); }
+.nishi-filter-btn.active { background: var(--purple); color: white; }
+
+/* Nishi pick card */
+.place-card.nishi-pick { background: var(--purple-light); border-color: var(--purple-mid); }
+.place-card.nishi-pick .place-name { color: var(--text); }
+.place-card.nishi-pick .place-desc { color: #555; }
+.nishi-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 600; color: var(--purple); background: white; border: 1px solid var(--purple-mid); border-radius: 20px; padding: 2px 10px; margin-bottom: 8px; letter-spacing: 0.04em; }
 
 /* place cards */
 .places-list { margin-bottom: 24px; }
@@ -155,18 +163,14 @@ body { background: var(--bg); font-family: Inter, sans-serif; color: var(--text)
 
   <div class="divider"><span>or explore</span></div>
 
-  <div class="cards">
-    <div class="card" onclick="getNearby('general')">
-      <div class="card-icon">📍</div>
-      <h3>General Nearby</h3>
-      <p>What's around me right now?</p>
-      <div class="card-arrow">›</div>
-    </div>
-    <div class="card purple" onclick="getNearby('nishi')">
-      <div class="card-icon">✦</div>
-      <h3>Nishi's Picks</h3>
-      <p>Taste mein best —<br>Nishi aur Everest</p>
-      <div class="card-arrow">›</div>
+  <div class="cards" style="grid-template-columns: 1fr;">
+    <div class="card purple" onclick="getNearby()" style="display:flex; align-items:center; gap:16px; padding:22px 20px;">
+      <div class="card-icon" style="margin-bottom:0; flex-shrink:0;">📍</div>
+      <div>
+        <h3>What's nearby</h3>
+        <p>Real spots close to you — includes Nishi's picks ✦</p>
+      </div>
+      <div class="card-arrow" style="position:static; margin-left:auto;">›</div>
     </div>
   </div>
 
@@ -432,6 +436,7 @@ body { background: var(--bg); font-family: Inter, sans-serif; color: var(--text)
 
   <div id="filter-bar" style="display:none;" class="filter-bar">
     <button class="filter-btn active" data-cat="all" onclick="applyFilter('all')">All</button>
+    <button class="filter-btn nishi-filter-btn" data-cat="nishi" onclick="applyFilter('nishi')">✦ Nishi's</button>
     <button class="filter-btn" data-cat="food" onclick="applyFilter('food')">🍜 Food</button>
     <button class="filter-btn" data-cat="cafe" onclick="applyFilter('cafe')">☕ Cafe</button>
     <button class="filter-btn" data-cat="park" onclick="applyFilter('park')">🌿 Parks</button>
@@ -600,12 +605,14 @@ function renderPlaces(places, lat, lng) {
   places.forEach(p => {
     const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(p.name + ' New York City')}`;
     const card = document.createElement('div');
-    card.className = 'place-card';
+    card.className = p.isNishiPick ? 'place-card nishi-pick' : 'place-card';
+    const badgeHtml = p.isNishiPick ? `<div class="nishi-badge">✦ Nishi's pick</div>` : '';
     const distHtml = p.dist ? `<span class="place-distance">⟶ ${metersToWalk(p.dist)}</span>` : '';
     const ratingHtml = p.rating ? `<span class="place-rating">⭐ ${p.rating} ${formatReviews(p.reviewCount)}</span>` : '';
     const priceHtml = p.priceLevel ? `<span class="place-price">${priceLabel(p.priceLevel)}</span>` : '';
-    const vibeHtml = vibeTag(p.types);
-    card.innerHTML = `<div class="place-name">${p.name}</div><div class="place-desc">${p.description}</div><div class="place-meta">${distHtml}${ratingHtml}${priceHtml}${vibeHtml}</div><a class="maps-link" href="${mapsUrl}" target="_blank">↗ Open in Google Maps</a>`;
+    const vibeHtml = p.isNishiPick ? '' : vibeTag(p.types);
+    const descHtml = p.description ? `<div class="place-desc">${p.description}</div>` : '';
+    card.innerHTML = `${badgeHtml}<div class="place-name">${p.name}</div>${descHtml}<div class="place-meta">${distHtml}${ratingHtml}${priceHtml}${vibeHtml}</div><a class="maps-link" href="${mapsUrl}" target="_blank">↗ Open in Google Maps</a>`;
     list.appendChild(card);
   });
   const sub = nearestSubway(lat, lng);
@@ -625,10 +632,8 @@ const CATEGORY_TYPES = {
   sights: ['museum', 'tourist_attraction', 'art_gallery', 'church', 'mosque', 'temple', 'hindu_temple', 'synagogue', 'place_of_worship', 'landmark', 'historical_landmark', 'book_store', 'movie_theater', 'performing_arts_theater', 'cultural_center', 'aquarium', 'zoo', 'observation_deck']
 };
 
-function getNearby(mode) {
-  const isNishi = mode === 'nishi';
-  currentMode = mode;
-  document.getElementById('results-title').innerHTML = isNishi ? 'Nishi\'s <em>picks near you</em>' : 'What\'s <em>nearby</em>';
+function getNearby() {
+  document.getElementById('results-title').innerHTML = 'What\'s <em>nearby</em>';
   document.getElementById('filter-bar').style.display = 'flex';
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === 'all'));
   showResults();
@@ -637,8 +642,8 @@ function getNearby(mode) {
     pos => {
       const { latitude: lat, longitude: lng } = pos.coords;
       currentLat = lat; currentLng = lng;
-      setLoading(isNishi ? "Finding Nishi's picks near you..." : "Finding what's nearby...");
-      isNishi ? fetchNishiPicks(lat, lng) : fetchGeneralNearby(lat, lng);
+      setLoading("Finding what's nearby...");
+      fetchNearby(lat, lng);
     },
     () => showError("Couldn't get your location. Open this in Chrome (not Safari) for testing, or deploy to Vercel for full mobile access.")
   );
@@ -648,33 +653,30 @@ function applyFilter(cat) {
   if (!currentLat) return;
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
 
-  if (currentMode === 'nishi') {
-    if (cat === 'all') {
-      setLoading("Finding Nishi's picks near you...");
-      fetchNishiPicks(currentLat, currentLng);
-    } else {
-      const filtered = NISHI_PICKS
-        .filter(p => p.category === cat)
-        .map(p => ({ ...p, dist: haversineDistance(currentLat, currentLng, p.lat, p.lng) }))
-        .sort((a, b) => a.dist - b.dist);
-      setLoading("Filtering picks...");
-      enrichWithPlaces(filtered).then(enriched => renderPlaces(enriched, currentLat, currentLng));
-    }
+  if (cat === 'all') {
+    renderPlaces(currentPlaces, currentLat, currentLng);
+  } else if (cat === 'nishi') {
+    const filtered = currentPlaces.filter(p => p.isNishiPick);
+    filtered.length
+      ? renderPlaces(filtered, currentLat, currentLng)
+      : showEmpty("No Nishi picks within range right now.");
   } else {
-    // General Nearby — filter stored results by Google place types
-    if (cat === 'all') {
-      renderPlaces(currentPlaces, currentLat, currentLng);
-    } else {
-      const typeList = CATEGORY_TYPES[cat] || [];
-      const filtered = currentPlaces.filter(p => p.types?.some(t => typeList.includes(t)));
-      if (filtered.length) {
-        renderPlaces(filtered, currentLat, currentLng);
-      } else {
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('places-list').innerHTML = `<p style="color:var(--muted);font-size:14px;padding:16px 0;">No ${cat} spots found nearby — tap All to see everything.</p>`;
-      }
-    }
+    // Filter: Nishi picks by category + Google results by types
+    const typeList = CATEGORY_TYPES[cat] || [];
+    const nishiCat = cat === 'park' ? 'park' : cat === 'sights' ? 'sights' : cat;
+    const filtered = currentPlaces.filter(p =>
+      (p.isNishiPick && p.category === nishiCat) ||
+      (!p.isNishiPick && p.types?.some(t => typeList.includes(t)))
+    );
+    filtered.length
+      ? renderPlaces(filtered, currentLat, currentLng)
+      : showEmpty(`No ${cat} spots found nearby — tap All to see everything.`);
   }
+}
+
+function showEmpty(msg) {
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('places-list').innerHTML = `<p style="color:var(--muted);font-size:14px;padding:16px 0;">${msg}</p>`;
 }
 
 function formatReviews(n) {
@@ -712,83 +714,52 @@ function parseClaudeJSON(text) {
   return JSON.parse(text.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim());
 }
 
-function fetchGeneralNearby(lat, lng) {
-  // Step 1: Get real nearby places from Google
+function fetchNearby(lat, lng) {
+  // Step 1: Get Nishi's picks within 1.5km — mark them, sort by distance
+  const nishiNearby = NISHI_PICKS
+    .map(p => ({ ...p, dist: haversineDistance(lat, lng, p.lat, p.lng), isNishiPick: true }))
+    .filter(p => p.dist <= 1500)
+    .sort((a, b) => a.dist - b.dist);
+
+  // Step 2: Get real nearby places from Google
   fetch('/api/places', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ mode: 'nearby', lat, lng, radius: 800 })
+    body: JSON.stringify({ mode: 'nearby', lat, lng, radius: 1000 })
   })
   .then(r => r.json())
   .then(googlePlaces => {
-    if (!googlePlaces.length) throw new Error('No places found nearby');
-
-    // Filter out things Abhiruchi doesn't need (transit, banks, hotels, parking)
+    // Filter out noise (transit, banks, hotels, parking) and places already in Nishi's picks
     const skip = ['transit_station', 'subway_station', 'bus_station', 'lodging', 'gas_station', 'atm', 'bank', 'parking', 'car_wash', 'car_dealer'];
-    const filtered = googlePlaces.filter(p => !p.types?.some(t => skip.includes(t)));
+    const nishiNames = new Set(nishiNearby.map(p => p.name.toLowerCase()));
+    const googleFiltered = googlePlaces
+      .filter(p => !p.types?.some(t => skip.includes(t)))
+      .filter(p => !nishiNames.has(p.displayName?.text?.toLowerCase()))
+      .slice(0, 12)
+      .map(p => ({
+        name: p.displayName?.text,
+        isNishiPick: false,
+        dist: p.location ? haversineDistance(lat, lng, p.location.latitude, p.location.longitude) : null,
+        rating: p.rating,
+        reviewCount: p.userRatingCount,
+        priceLevel: p.priceLevel,
+        types: p.types
+      }));
 
-    // Build a summary list for Claude — just names + types so Claude can write descriptions
-    const placesList = filtered.slice(0, 12).map(p =>
-      `- ${p.displayName?.text} (${p.types?.slice(0, 2).join(', ')})`
-    ).join('\n');
-
-    setLoading("Writing descriptions...");
-
-    // Step 2: Ask Claude to pick 4 and write warm descriptions
-    return fetch('/api/claude', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001', max_tokens: 600,
-        system: `You are a warm NYC guide for Abhiruchi, who loves chill spots — cafes, parks, independent restaurants, bookshops, galleries. She does NOT like clubs or loud nightlife. She prefers less red meat and seafood — chicken is great, avoid heavy steakhouses or seafood-only spots. If suggesting a bar, only suggest ones known for craft beer or a good beer selection — no cocktail bars or clubs. Given a list of real nearby places, pick exactly 4 that suit her vibe. Output ONLY a raw JSON array — no markdown, no code blocks, no backticks. Start with [ and end with ]. Format: [{"name": "exact place name from the list", "description": "one warm sentence as if a friend is texting her"}]`,
-        messages: [{ role: 'user', content: `Real places within 10 min walk:\n${placesList}\n\nPick 4 for Abhiruchi.` }]
-      })
-    })
-    .then(r => r.json())
-    .then(data => {
-      const picked = parseClaudeJSON(data.content[0].text);
-
-      // Step 3: Match Claude's picks back to Google's data to get ratings/price/types/distance
-      const enriched = picked.map(p => {
-        const match = filtered.find(g => g.displayName?.text?.toLowerCase() === p.name.toLowerCase())
-                   || filtered.find(g => g.displayName?.text?.toLowerCase().includes(p.name.toLowerCase()));
-        const dist = match?.location ? haversineDistance(lat, lng, match.location.latitude, match.location.longitude) : null;
-        return {
-          ...p,
-          dist,
-          rating: match?.rating,
-          reviewCount: match?.userRatingCount,
-          priceLevel: match?.priceLevel,
-          types: match?.types
-        };
-      });
-
-      renderPlaces(enriched, lat, lng);
+    // Only enrich Nishi picks with ratings — Google results already have their data, don't touch them
+    enrichWithPlaces(nishiNearby).then(enrichedNishi => {
+      const combined = [...enrichedNishi, ...googleFiltered].sort((a, b) => (a.dist || 9999) - (b.dist || 9999));
+      renderPlaces(combined, lat, lng);
     });
   })
-  .catch(() => showError("Couldn't find places nearby. Make sure you're in New York City!"));
-}
-
-function fetchNishiPicks(lat, lng) {
-  const sorted = NISHI_PICKS.map(p => ({ ...p, dist: haversineDistance(lat, lng, p.lat, p.lng) })).sort((a, b) => a.dist - b.dist).slice(0, 8);
-  const picksSummary = sorted.map((p, i) => `${i+1}. ${p.name} (${p.neighbourhood}, ${metersToWalk(p.dist)}): ${p.description}`).join('\n');
-  fetch("/api/claude", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({
-      model: "claude-haiku-4-5-20251001", max_tokens: 1024,
-      system: `You are presenting Nishi's personal NYC picks to her friend Abhiruchi. The list is already sorted by distance — preserve that order. Abhiruchi loves chill, low-key spots — craft beer bars, cafes, parks, bookshops, neighbourhood gems. She does NOT like clubs, loud bars, or dancing venues — skip those entirely. Return ALL picks that suit her vibe (up to 6), keeping distance order. Output ONLY a raw JSON array — no markdown, no code blocks, no backticks. Start your response with [ and end with ]. Format: [{"name": "place name", "description": "warm personal sentence as if Nishi is texting her friend"}]. Direct, loving, like a best friend's recommendation.`,
-      messages: [{ role: "user", content: `Abhiruchi is near ${lat}, ${lng}. Nishi's closest picks:\n${picksSummary}` }]
-    })
-  }).then(r => r.json()).then(async data => {
-    const places = parseClaudeJSON(data.content[0].text);
-    const withDist = places.map(p => {
-      const match = sorted.find(s => s.name === p.name);
-      return { ...p, dist: match ? match.dist : null };
-    });
-    const enriched = await enrichWithPlaces(withDist);
-    renderPlaces(enriched, lat, lng);
-  }).catch(() => showError("Something went wrong. Check your API key and try again."));
+  .catch(() => {
+    // If Google fails, still show Nishi's picks
+    if (nishiNearby.length) {
+      enrichWithPlaces(nishiNearby).then(enriched => renderPlaces(enriched, lat, lng));
+    } else {
+      showError("Couldn't find places nearby. Make sure you're in New York City!");
+    }
+  });
 }
 
 function askNYC() {
@@ -808,6 +779,8 @@ function askNYC() {
   }).then(r => r.json()).then(data => {
     responseEl.innerHTML = data.content[0].text
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
       .replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
   })
   .catch(() => { responseEl.textContent = "Something went wrong. Please try again."; });

@@ -21,6 +21,7 @@ module.exports = async function handler(req, res) {
         })
       });
       const data = await response.json();
+      if (!data.places) console.error('Google Places nearby error:', JSON.stringify(data));
       res.status(200).json(data.places || []);
     } else {
       if (!query) return res.status(400).json({ error: 'Missing query' });

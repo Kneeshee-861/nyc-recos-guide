@@ -761,7 +761,7 @@ function fetchNearby(lat, lng) {
   .then(r => r.json())
   .then(googlePlaces => {
     // Filter out noise (transit, banks, hotels, parking) and places already in Nishi's picks
-    const skip = ['transit_station', 'subway_station', 'bus_station', 'lodging', 'gas_station', 'atm', 'bank', 'parking', 'car_wash', 'car_dealer'];
+    const skip = ['transit_station', 'subway_station', 'bus_station', 'lodging', 'gas_station', 'atm', 'bank', 'parking', 'car_wash', 'car_dealer', 'office', 'corporate_office', 'government_office', 'local_government_office', 'city_hall', 'post_office', 'courthouse', 'embassy', 'insurance_agency', 'real_estate_agency', 'accounting', 'lawyer', 'doctor', 'dentist', 'hospital', 'pharmacy', 'physiotherapist'];
     const nishiNames = new Set(nishiNearby.map(p => p.name.toLowerCase()));
     const googleFiltered = googlePlaces
       .filter(p => !p.types?.some(t => skip.includes(t)))

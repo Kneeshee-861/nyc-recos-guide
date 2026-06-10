@@ -584,12 +584,12 @@ const NISHI_PICKS = [
   { name: "Anita La Mamma del Gelato", category: "cafe", neighbourhood: "NoMad", lat: 40.7456, lng: -73.9892, description: "Boutique Italian gelato in NoMad — handmade, intensely rich flavors. This place is genuinely addictive." },
   { name: "Anita La Mamma del Gelato", category: "cafe", neighbourhood: "Upper East Side", lat: 40.7750, lng: -73.9537, description: "Anita's UES spot — lines out the door for a reason. World-class gelato, go." },
   { name: "Anita La Mamma del Gelato", category: "cafe", neighbourhood: "Midtown", lat: 40.7493, lng: -73.9929, description: "Anita near Herald Square — perfect sweet break in the middle of shopping and sightseeing." },
-  { name: "Anita La Mamma del Gelato", category: "cafe", neighbourhood: "Times Square", lat: 40.7579, lng: -73.9859, description: "Anita right by Times Square — proper Italian gelato in the middle of the madness. Do it." },
+  { name: "Anita La Mamma del Gelato", category: "cafe", neighbourhood: "Times Square", lat: 40.7582, lng: -73.9878, description: "Anita right by Times Square — proper Italian gelato in the middle of the madness. Do it." },
 
   // MAGNOLIA BAKERY
   { name: "Magnolia Bakery - Rockefeller Center", category: "cafe", neighbourhood: "Midtown", lat: 40.7583, lng: -73.9794, description: "Magnolia at Rockefeller Center — iconic banana pudding and frosted cupcakes right in the heart of Midtown." },
   { name: "Magnolia Bakery", category: "cafe", neighbourhood: "Upper West Side", lat: 40.7731, lng: -73.9824, description: "Magnolia on the UWS — classic home-style cakes and pudding, great if you're near Central Park." },
-  { name: "Magnolia Bakery - Grand Central", category: "cafe", neighbourhood: "Midtown East", lat: 40.7527, lng: -73.9778, description: "Magnolia inside Grand Central — grab a pint of banana pudding before your train. Non-negotiable." },
+  { name: "Magnolia Bakery - Grand Central", category: "cafe", neighbourhood: "Midtown East", lat: 40.7527, lng: -73.9762, description: "Magnolia inside Grand Central — grab a pint of banana pudding before your train. Non-negotiable." },
   { name: "Magnolia Bakery", category: "cafe", neighbourhood: "Hudson Yards", lat: 40.7530, lng: -74.0013, description: "Magnolia in Hudson Yards — easy to combine with EDGE or The Vessel if you're up here." },
 ];
 
@@ -881,7 +881,8 @@ function applyFilter(cat) {
         types: p.types,
         editorialSummary: p.editorialSummary?.text || ''
       }));
-    const combined = [...nishiForCat, ...googleFiltered].sort((a, b) => (a.dist || 9999) - (b.dist || 9999));
+    const nishiForCatDeduped = dedupeByChain([...nishiForCat].sort((a, b) => (a.dist||9999)-(b.dist||9999)));
+    const combined = [...nishiForCatDeduped, ...googleFiltered].sort((a, b) => (a.dist || 9999) - (b.dist || 9999));
     combined.length
       ? renderPlaces(combined, currentLat, currentLng)
       : showEmpty(`No ${cat} spots found nearby — tap All to see everything.`);
@@ -905,6 +906,24 @@ function formatReviews(n) {
 function priceLabel(level) {
   const map = { PRICE_LEVEL_FREE: 'Free', PRICE_LEVEL_INEXPENSIVE: '$', PRICE_LEVEL_MODERATE: '$$', PRICE_LEVEL_EXPENSIVE: '$$$', PRICE_LEVEL_VERY_EXPENSIVE: '$$$$' };
   return map[level] || null;
+}
+function getChainKey(name) {
+  return name
+    .replace(/:\s*.+$/, '')          // "Emmy Squared Pizza: East Village" → "Emmy Squared Pizza"
+    .replace(/\s+[-–]\s*.+$/, '')   // "Magnolia Bakery - Grand Central" → "Magnolia Bakery"
+    .replace(/\s+Broadway$/, '')     // "Joe's Pizza Broadway" → "Joe's Pizza"
+    .replace(/\s+(NY|5th Avenue|Westside)$/i, '') // IPPUDO variants → "IPPUDO"
+    .toLowerCase().trim();
+}
+function dedupeByChain(picks) {
+  // picks must be pre-sorted by distance — keeps only the closest per chain family
+  const seen = new Set();
+  return picks.filter(p => {
+    const key = getChainKey(p.name);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 function cuisineLabel(types) {
   if (!types) return '';
@@ -963,6 +982,8 @@ function fetchNearby(lat, lng) {
     .map(p => ({ ...p, dist: haversineDistance(lat, lng, p.lat, p.lng), isNishiPick: true }))
     .filter(p => p.dist <= 1500)
     .sort((a, b) => a.dist - b.dist);
+  // Only show the nearest location per chain (prevents same chain flooding results)
+  const nishiDeduped = dedupeByChain(nishiNearby);
 
   // Step 2: Get real nearby places from Google
   fetch('/api/places', {
@@ -991,7 +1012,7 @@ function fetchNearby(lat, lng) {
       }));
 
     // Only enrich Nishi picks with ratings — Google results already have their data, don't touch them
-    enrichWithPlaces(nishiNearby).then(enrichedNishi => {
+    enrichWithPlaces(nishiDeduped).then(enrichedNishi => {
       const combined = [...enrichedNishi, ...googleFiltered].sort((a, b) => (a.dist || 9999) - (b.dist || 9999));
       allPlaces = combined;
       renderPlaces(combined, lat, lng);
@@ -999,8 +1020,8 @@ function fetchNearby(lat, lng) {
   })
   .catch(() => {
     // If Google fails, still show Nishi's picks
-    if (nishiNearby.length) {
-      enrichWithPlaces(nishiNearby).then(enriched => {
+    if (nishiDeduped.length) {
+      enrichWithPlaces(nishiDeduped).then(enriched => {
         allPlaces = enriched;
         renderPlaces(enriched, lat, lng);
       });

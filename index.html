@@ -448,14 +448,7 @@ body { background: var(--bg); font-family: Inter, sans-serif; color: var(--text)
 
   <div id="subway-section" style="display:none;">
     <div class="subway-label">Nearest subway</div>
-    <div class="subway-card">
-      <div class="subway-badge" id="subway-badge">1</div>
-      <div style="flex:1;">
-        <div class="subway-name" id="subway-name">—</div>
-        <div class="subway-detail" id="subway-detail">—</div>
-      </div>
-      <a id="subway-maps-link" href="#" target="_blank" class="maps-link" style="margin:0; flex-shrink:0; font-size:11px;">↗ Maps</a>
-    </div>
+    <div id="subway-cards-list"></div>
     <a id="transit-link" href="#" target="_blank" style="display:block; margin-top:10px; text-align:center; font-size:13px; color:var(--purple); background:var(--purple-light); border:1px solid var(--purple-mid); border-radius:20px; padding:10px 0; text-decoration:none; font-weight:500;">🚌 Plan transit route</a>
   </div>
 
@@ -698,6 +691,12 @@ function haversineDistance(lat1, lng1, lat2, lng2) {
   const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
+function nearestSubways(lat, lng, count = 2) {
+  return SUBWAY_STATIONS
+    .map(s => ({ ...s, dist: haversineDistance(lat, lng, s.lat, s.lng) }))
+    .sort((a, b) => a.dist - b.dist)
+    .slice(0, count);
+}
 function nearestSubway(lat, lng) {
   return SUBWAY_STATIONS.reduce((best, s) => {
     const d = haversineDistance(lat, lng, s.lat, s.lng);
@@ -726,12 +725,18 @@ function renderPlaces(places, lat, lng) {
     card.innerHTML = `${badgeHtml}<div class="place-name">${p.name}</div>${descHtml}<div class="place-meta">${distHtml}${ratingHtml}${priceHtml}${vibeHtml}</div><a class="maps-link" href="${mapsUrl}" target="_blank">↗ Open in Google Maps</a>`;
     list.appendChild(card);
   });
-  const sub = nearestSubway(lat, lng);
-  document.getElementById('subway-badge').style.background = sub.color;
-  document.getElementById('subway-badge').textContent = sub.lines.split(' ')[0];
-  document.getElementById('subway-name').textContent = sub.name;
-  document.getElementById('subway-detail').textContent = `${metersToWalk(sub.dist)} · Lines ${sub.lines}`;
-  document.getElementById('subway-maps-link').href = `https://maps.google.com/?q=${encodeURIComponent(sub.name + ' subway station New York City')}`;
+  const subs = nearestSubways(lat, lng, 2);
+  const cardsList = document.getElementById('subway-cards-list');
+  cardsList.innerHTML = subs.map(sub => `
+    <div class="subway-card" style="margin-bottom:8px;">
+      <div class="subway-badge" style="background:${sub.color}">${sub.lines.split(' ')[0]}</div>
+      <div style="flex:1;">
+        <div class="subway-name">${sub.name}</div>
+        <div class="subway-detail">${metersToWalk(sub.dist)} · Lines ${sub.lines}</div>
+      </div>
+      <a href="https://maps.google.com/?q=${encodeURIComponent(sub.name + ' subway station New York City')}" target="_blank" class="maps-link" style="margin:0; flex-shrink:0; font-size:11px;">↗ Maps</a>
+    </div>
+  `).join('');
   document.getElementById('transit-link').href = `https://www.google.com/maps/dir/?api=1&origin=${lat},${lng}&travelmode=transit`;
   document.getElementById('subway-section').style.display = 'block';
 }
